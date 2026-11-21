@@ -31,14 +31,9 @@ path instead. The agent uses Sarah, a soft-spoken female voice, at a slightly sl
 
 | Stage | What happens |
 | --- | --- |
-| Landing | Headline, voice orb and typing box. No scripted introduction: the first thing heard is a question. |
-| Discover | A short, adaptive conversation about six things, gathered in any order and one question at a time. Wave calls `show_profile` and reads the profile back. |
-| Profile | Concrete chips they can remove. Confirming it is what moves the conversation on. |
-| Map | Three to five cards from `show_career_cards`, each with a reason tied to something they said. |
-| Detail | What a day looks like, skills, school subjects, Irish routes in, related work, and an AI-generated label. |
-| Simulate | An authored scenario for the three polished careers, or a scene Wave builds for anything else. Choices change what happens next. |
-| Debrief | What surprised people, one honest hard part, one thing to try this week. Then another career or stop. |
-| Ended | The local profile can be reset; provider retention depends on ElevenLabs settings. |
+| Landing | One dark screen with live captions, a career panel and a Start talking mic. No scripted introduction: the first thing heard is a question. |
+| Discover | A short, adaptive conversation, one question at a time. |
+| Map | Three to five cards from `show_career_cards`, each with a reason, a route in and a typical Tuesday. |
 
 ## What's where
 
