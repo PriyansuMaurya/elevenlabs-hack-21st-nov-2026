@@ -497,8 +497,10 @@ function genericDetail(card) {
     id: card.id,
     title: card.title,
     whatYouDo: card.oneLiner || `You do the day-to-day work of a ${card.title.toLowerCase()}.`,
-    daily: [      'The daily tasks depend on the employer and specialism; check with someone doing this work.',
+    daily: [
+      'The daily tasks depend on the employer and specialism; check with someone doing this work.',
       'Ask a careers advisor or someone in the role for examples of a typical working day.',
+      'Expect a mix of routine work and whatever problem turns up that day.',
     ],
     skills: ['Skills vary by role and employer; check with a careers advisor.'],
     subjects: ['Relevant subjects vary; check current guidance for this role.'],

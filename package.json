@@ -10,6 +10,7 @@
     "setup-agent": "node scripts/setup-agent.mjs",
     "test": "node --test tests/lib.test.mjs",
     "test:e2e": "node tests/e2e-personas.mjs",
+    "test:opening": "node tests/e2e-opening.mjs",
     "test:safety": "node tests/e2e-safety.mjs"
   },
   "repository": {

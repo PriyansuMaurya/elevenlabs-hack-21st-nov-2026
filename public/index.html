@@ -44,13 +44,13 @@
       </div>
 
       <main class="stage">
-        <section class="voice-stage" aria-label="Sam">
+        <section class="voice-stage" aria-label="Wave">
           <div class="voice-cluster">
             <span class="aura" id="aura" aria-hidden="true"></span>
             <button class="voice-trigger" id="voice" type="button" aria-pressed="false">
               <span class="orb" id="orb"></span>
               <span class="voice-meta">
-                <span class="voice-state" id="voice-state">Talk to Sam</span>
+                <span class="voice-state" id="voice-state">Talk to Wave</span>
                 <span class="voice-sub" id="voice-sub">Two minutes, then try a day of the work.</span>
               </span>
             </button>
@@ -58,24 +58,23 @@
 
           <div class="captions" id="captions" aria-live="polite">
             <p class="bar-state" id="bar-state" aria-hidden="true">Listening</p>
-            <p class="caption caption-sam" id="caption-sam"></p>
+            <p class="caption caption-wave" id="caption-wave"></p>
             <p class="caption caption-user" id="caption-user" hidden></p>
           </div>
         </section>
 
-        <section class="surface" id="surface" aria-label="Sam's ideas">
+        <section class="surface" id="surface" aria-label="Wave's ideas">
           <div class="panel panel-discover" id="panel-discover">
             <h1 class="display">Find work you'd actually want.</h1>
             <p class="lede">
-              Talk to Sam about what you're into. You'll get a few real jobs, then try one for three
+              Talk to Wave about what you're into. You'll get a few real jobs, then try one for three
               minutes to see how it feels.
             </p>
             <p class="disclosure">
-              Sam is an AI voice. You can stop any time. Your conversation is sent to ElevenLabs. Talk, or type
-              below if you'd rather.
+              Talk, or type below if you'd rather. Your conversation is sent to ElevenLabs.
             </p>
             <form class="ask" id="ask-discover" novalidate>
-              <label class="sr-only" for="ask-discover-input">Type to Sam</label>
+              <label class="sr-only" for="ask-discover-input">Type to Wave</label>
               <input
                 id="ask-discover-input"
                 type="text"
@@ -109,14 +108,14 @@
             </div>
             <div class="card-field" id="card-field"></div>
             <p class="empty-cards" id="cards-empty" hidden>
-              Sam couldn't lay those out. Ask for another set.
+              Wave couldn't lay those out. Ask for another set.
             </p>
           </div>
 
           <div class="panel panel-simulate" id="panel-simulate">
             <article class="scene" id="scene" aria-live="polite">
               <p class="scene-mark" id="scene-mark">Decision 1 of 2</p>
-              <p class="scene-text" id="scene-text">Sam is setting the scene.</p>
+              <p class="scene-text" id="scene-text">Wave is setting the scene.</p>
             </article>
             <div class="scene-options" id="scene-options"></div>
             <form class="ask ask-move" id="ask-move" novalidate>
@@ -157,7 +156,7 @@
             <h2 class="headline-lg">Done for now.</h2>
             <p class="body">This page does not save your profile. Your conversation was sent to ElevenLabs.</p>
             <div class="panel-actions">
-              <button class="button-secondary" id="talk-again" type="button">Talk to Sam</button>
+              <button class="button-secondary" id="talk-again" type="button">Talk to Wave</button>
             </div>
           </div>
 
@@ -182,11 +181,11 @@
             <footer class="sheet-foot">
               <button class="button-primary" id="try-day" type="button">Try a 3-minute day in the life</button>
               <form class="ask" id="ask-sheet" novalidate>
-                <label class="sr-only" for="ask-sheet-input">Ask Sam about this</label>
+                <label class="sr-only" for="ask-sheet-input">Ask Wave about this</label>
                 <input
                   id="ask-sheet-input"
                   type="text"
-                  placeholder="Ask Sam about this"
+                  placeholder="Ask Wave about this"
                   autocomplete="off"
                   enterkeyhint="send"
                 />

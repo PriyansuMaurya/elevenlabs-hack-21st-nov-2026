@@ -1,10 +1,10 @@
 # Three-minute demo
 
-Beforehand, start the app with `npm start`, open `http://localhost:5173`, and use headphones and a microphone. Explain that Sam is an AI and the information is not verified careers advice.
+Beforehand, start the app with `npm start`, open `http://localhost:5173`, and use headphones and a microphone. Explain that the career information is not verified careers advice.
 
 ## 0:00–1:10: Discover
 
-Start the conversation. Say: “I edit videos for my cousin's band and make sounds on my laptop. I don't like presenting.” Answer Sam's follow-ups naturally, including a preference and a practical barrier. When the profile appears, correct anything wrong and confirm it.
+Start the conversation. Say: “I edit videos for my cousin's band and make sounds on my laptop. I don't like presenting.” Answer Wave's follow-ups naturally, including a preference and a practical barrier. When the profile appears, correct anything wrong and confirm it.
 
 ## 1:10–1:45: Explore the map
 

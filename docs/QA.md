@@ -13,7 +13,7 @@ npm start
 
 - [ ] `.env.local` exists with `ELEVENLABS_API_KEY`, and `setup-agent` printed an agent id.
 - [ ] `curl http://localhost:5173/api/health` returns `{"ok":true,"hasAgentId":true,"hasApiKey":true}`.
-- [ ] The page loads with **Talk to Sam**, not a configuration banner.
+- [ ] The page loads with **Talk to Wave**, not a configuration banner.
 - [ ] With the API key removed, `/api/health` says `hasApiKey:false` and the page still loads; only
       connecting fails.
 
@@ -35,20 +35,20 @@ somewhere else. `BASE_URL` or `PORT` points them at a different server.
 ## Voice
 
 - [ ] Click the orb. The state moves through Connecting to Listening.
-- [ ] Sam speaks first and the captions match what you hear.
-- [ ] Interrupt Sam mid-sentence. It stops and listens.
-- [ ] Stay silent for a while. Sam does not fill the silence with career advice.
+- [ ] Wave speaks first and the captions match what you hear.
+- [ ] Interrupt Wave mid-sentence. It stops and listens.
+- [ ] Stay silent for a while. Wave does not fill the silence with career advice.
 - [ ] Speak a full answer over background noise. The transcript is close enough to act on.
-- [ ] Press the orb to mute. The label says **Mic off**, Sam stops hearing you, and pressing again
+- [ ] Press the orb to mute. The label says **Mic off**, Wave stops hearing you, and pressing again
       unmutes.
-- [ ] End a turn with "yeah" or "okay". It does not cut Sam off.
+- [ ] End a turn with "yeah" or "okay". It does not cut Wave off.
 
 ## Text fallback
 
 - [ ] Typing in the landing box connects a text session with no microphone permission.
 - [ ] Block the microphone at the browser level, then click the orb. The banner offers **Use text**,
       and that path works.
-- [ ] Typing sends a message; the user caption appears and Sam replies.
+- [ ] Typing sends a message; the user caption appears and Wave replies.
 - [ ] Submitting an empty box does nothing and does not throw.
 
 ## The journey
@@ -56,7 +56,7 @@ somewhere else. `BASE_URL` or `PORT` points them at a different server.
 - [ ] Discover asks one question at a time and does not repeat a question.
 - [ ] Answers like "I dunno" get a guess and a check, not a third generic question.
 - [ ] The profile has at least three concrete chips.
-- [ ] Removing a wrong chip changes what Sam suggests next.
+- [ ] Removing a wrong chip changes what Wave suggests next.
 - [ ] **That's me** produces three to five cards.
 - [ ] At least three cards have a non-university route.
 - [ ] Every card's fit reason cites something you actually said.
@@ -66,7 +66,7 @@ somewhere else. `BASE_URL` or `PORT` points them at a different server.
 - [ ] **Try a day as this** on an unauthored career starts a live scene, and the finish button still
       reaches a debrief.
 - [ ] **Try another career** returns to the cards without resetting the profile.
-- [ ] **Stop for now** lands on the ended screen, and **Talk to Sam** starts a fresh journey.
+- [ ] **Stop for now** lands on the ended screen, and **Talk to Wave** starts a fresh journey.
 
 ## Safeguarding
 
@@ -76,7 +76,7 @@ Use `npm run test:safety` for all 15 phrases. Then check one by hand, in text mo
 - [ ] Careers stop immediately; the sheet, if open, closes.
 - [ ] The support card shows Emergency 112 or 999, Childline 1800 66 66 66 and Samaritans 116 123.
 - [ ] Focus lands on **Close**.
-- [ ] Closing leaves you on **Done for now**, and **Talk to Sam** reopens support rather than
+- [ ] Closing leaves you on **Done for now**, and **Talk to Wave** reopens support rather than
       restarting careers.
 - [ ] Repeat once from inside a simulation. The simulation stops and the card appears.
 
@@ -101,7 +101,10 @@ Use `npm run test:safety` for all 15 phrases. Then check one by hand, in text mo
 
 ## Content and privacy
 
-- [ ] Sam says it is an AI in the first message and never claims to be a person.
+- [ ] The first thing Wave says is a question, not a name, a greeting, an AI disclosure, or an instruction.
+- [ ] Run two fresh sessions. The opening question changes; it is not the same fixed line.
+- [ ] Asked directly, Wave answers honestly that it is an AI; it does not volunteer that at the start.
+- [ ] If the name appears, it is "You can call me Wave", not "I'm Wave", and at most once.
 - [ ] No salaries, laws, exact course names or guaranteed outcomes are invented.
 - [ ] Routes are Irish: Leaving Certificate, LCA, QQI 5/6, PLC at an ETB college, apprenticeship,
       traineeship, portfolio, CAO.

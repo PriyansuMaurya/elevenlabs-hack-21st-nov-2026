@@ -10,6 +10,8 @@ import { readFile, writeFile } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 
+import { OPENINGS } from '../agent/openings.mjs';
+
 // This file lives in scripts/, so the project root is one level up.
 const ROOT = resolve(import.meta.dirname ?? '.', '..');
 
@@ -34,10 +36,8 @@ if (!API_KEY) {
   process.exit(1);
 }
 
-// Says what it is in the first breath, as the brief requires, and states the
-// exit. Kept to one clause so it lands as an introduction, not a disclaimer.
-const FIRST_MESSAGE =
-  "Hi, I'm Sam. I'm an AI, not a person — I'll say that once. Stop any time. What do you do when there's nothing you're supposed to be doing?";
+// Fallback only: the server sends a different opening with every session.
+const FIRST_MESSAGE = OPENINGS[0];
 
 const tools = [
   {
@@ -217,9 +217,18 @@ function buildBody(prompt, { minimal = false } = {}) {
   }
 
   return {
-    name: 'NEXT STEP — Sam',
+    name: 'NEXT STEP — Wave',
     tags: ['next-step', 'careers', 'youth'],
     conversation_config: conversationConfig,
+    // The app picks a different opening for each session, so this one field
+    // has to be overridable at conversation start.
+    platform_settings: {
+      overrides: {
+        conversation_config_override: {
+          agent: { first_message: true },
+        },
+      },
+    },
   };
 }
 

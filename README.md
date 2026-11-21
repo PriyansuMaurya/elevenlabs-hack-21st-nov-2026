@@ -3,7 +3,7 @@
 A voice-first careers conversation for 15 to 18 year olds in Ireland who are expected to choose a
 future without knowing what jobs exist.
 
-Sam talks with them for about two minutes about what they actually do, what they avoid, and what
+Wave talks with them for about two minutes about what they actually do, what they avoid, and what
 would get in the way. That becomes a short profile they can correct, then three to five career cards
 — at least three reachable without a degree, at least one they have probably never heard of. They
 pick one and **try a day of it**: a normal working situation, two or three decisions with no
@@ -30,12 +30,12 @@ path instead.
 
 | Stage | What happens |
 | --- | --- |
-| Landing | Says what this is, that Sam is AI, and that they can stop. Voice orb and a typing box are both on screen. |
-| Discover | A short, adaptive conversation about six things, gathered in any order and one question at a time. Sam calls `show_profile` and reads the profile back. |
+| Landing | Headline, voice orb and typing box. No scripted introduction: the first thing heard is a question. |
+| Discover | A short, adaptive conversation about six things, gathered in any order and one question at a time. Wave calls `show_profile` and reads the profile back. |
 | Profile | Concrete chips they can remove. Confirming it is what moves the conversation on. |
 | Map | Three to five cards from `show_career_cards`, each with a reason tied to something they said. |
 | Detail | What a day looks like, skills, school subjects, Irish routes in, related work, and an AI-generated label. |
-| Simulate | An authored scenario for the three polished careers, or a scene Sam builds for anything else. Choices change what happens next. |
+| Simulate | An authored scenario for the three polished careers, or a scene Wave builds for anything else. Choices change what happens next. |
 | Debrief | What surprised people, one honest hard part, one thing to try this week. Then another career or stop. |
 | Ended | The local profile can be reset; provider retention depends on ElevenLabs settings. |
 
@@ -44,16 +44,18 @@ path instead.
 | Path | What it is |
 | --- | --- |
 | `agent/system-prompt.md` | Persona, phases, tool rules, turn limits, safeguarding. Pushed by `setup-agent`. |
+| `agent/openings.mjs` | Eight opening questions. The server hands out a different one each session. |
 | `agent/scenarios.md` | The three authored simulations, spliced into the prompt at `{{SCENARIOS}}`. |
 | `scripts/setup-agent.mjs` | Pushes prompt, first message, voice settings and client tools; saves the agent id. |
 | `server.mjs` | Static server plus `/api/session`, which mints a conversation token or signed URL so the API key stays server-side. |
 | `public/index.html`, `public/styles.css`, `public/app.js` | The page, the state machine, the session and the accessibility behavior. |
 | `public/lib/cards.js` | Card payload validation, clipping, dedupe and limits. |
 | `public/lib/safety.js` | Phrase-level safeguarding classifier and Irish helplines. |
-| `public/lib/careers.js` | Curated career details, caches, and the context sent to Sam when a card opens. |
+| `public/lib/careers.js` | Curated career details, caches, and the context sent to Wave when a card opens. |
 | `public/lib/scenarios.js` | Authored scenario runs, option matching, reflections. |
 | `tests/lib.test.mjs` | 21 unit tests for all four modules. |
 | `tests/e2e-personas.mjs` | Three personas through the real page and live agent over text. |
+| `tests/e2e-opening.mjs` | Four fresh sessions for varied, name-free openings, plus later name use. |
 | `tests/e2e-safety.mjs` | All 15 disclosures at three points in the journey. |
 
 ## Client tools
@@ -71,10 +73,10 @@ path instead.
 Typed messages are checked locally before sending; voice transcripts are checked after the audio reaches ElevenLabs. Phrase matching is limited and cannot reliably catch every disclosure. A detected disclosure
 closes the career sheet, ends the careers flow, moves focus to a support card, and lists Emergency
 (112 or 999), Childline (1800 66 66 66) and Samaritans (116 123) as callable links. Closing the card
-lands on the ended screen; "Talk to Sam" reopens support rather than restarting careers. The same
+lands on the ended screen; "Talk to Wave" reopens support rather than restarting careers. The same
 check runs on messages received after a reconnect, but cannot detect audio or messages that are not received.
 
-This is a floor, not a clinical service. The prompt tells Sam to stay calm, not ask for details, not
+This is a floor, not a clinical service. The prompt tells Wave to stay calm, not ask for details, not
 promise confidentiality, and point to a trusted adult.
 
 ## Tests
@@ -82,6 +84,7 @@ promise confidentiality, and point to a trusted adult.
 ```bash
 npm test                    # unit tests, no network
 npm run test:e2e            # needs npm start and a configured agent
+npm run test:opening        # four fresh sessions plus a later name check
 npm run test:safety         # needs npm start; no agent session required
 ```
 

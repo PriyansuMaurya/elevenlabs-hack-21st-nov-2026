@@ -4,6 +4,9 @@
 import { createReadStream, existsSync, statSync } from 'node:fs';
 import { createServer } from 'node:http';
 import { extname, join, normalize, resolve } from 'node:path';
+import { randomInt } from 'node:crypto';
+
+import { OPENINGS } from './agent/openings.mjs';
 
 const ROOT = resolve(import.meta.dirname ?? '.');
 
@@ -25,6 +28,18 @@ const CLIENT_BUNDLE = join(ROOT, 'node_modules/@elevenlabs/client/dist/lib.iife.
 
 const API_KEY = process.env.ELEVENLABS_API_KEY?.trim();
 const AGENT_ID = process.env.ELEVENLABS_AGENT_ID?.trim();
+
+// A session should never open with the same line as the last one. Random, but
+// with the previous opening excluded; no fixed sequence.
+let lastOpening = -1;
+function nextOpening() {
+  if (OPENINGS.length < 2) return OPENINGS[0];
+  let index = randomInt(OPENINGS.length);
+  while (index === lastOpening) index = randomInt(OPENINGS.length);
+  lastOpening = index;
+  return OPENINGS[index];
+}
+
 
 const MIME = {
   '.html': 'text/html; charset=utf-8',
@@ -69,7 +84,7 @@ async function handleSession(res, transport = 'voice') {
   }
 
   if (!API_KEY) {
-    return sendJson(res, 200, { agentId: AGENT_ID, mode: 'agentId' });
+    return sendJson(res, 200, { agentId: AGENT_ID, mode: 'agentId', firstMessage: nextOpening() });
   }
 
   // WebRTC tokens are voice-only. Text sessions need a websocket signed URL,
@@ -79,7 +94,7 @@ async function handleSession(res, transport = 'voice') {
       const { token } = await fetchFromElevenLabs(
         `conversation/token?agent_id=${encodeURIComponent(AGENT_ID)}`,
       );
-      if (token) return sendJson(res, 200, { conversationToken: token, mode: 'webrtc' });
+      if (token) return sendJson(res, 200, { conversationToken: token, mode: 'webrtc', firstMessage: nextOpening() });
     } catch (error) {
       console.warn('[session] conversation token failed:', error.message);
     }
@@ -89,7 +104,7 @@ async function handleSession(res, transport = 'voice') {
     const { signed_url: signedUrl } = await fetchFromElevenLabs(
       `conversation/get-signed-url?agent_id=${encodeURIComponent(AGENT_ID)}`,
     );
-    if (signedUrl) return sendJson(res, 200, { signedUrl, mode: 'websocket' });
+    if (signedUrl) return sendJson(res, 200, { signedUrl, mode: 'websocket', firstMessage: nextOpening() });
   } catch (error) {
     console.warn('[session] signed url failed:', error.message);
   }
@@ -97,6 +112,7 @@ async function handleSession(res, transport = 'voice') {
   return sendJson(res, 200, {
     agentId: AGENT_ID,
     mode: 'agentId',
+    firstMessage: nextOpening(),
     warning:
       'Could not get a token or signed URL; using the agent id directly. The agent must be public for this to work.',
   });
@@ -126,8 +142,7 @@ const server = createServer(async (req, res) => {
 
   if (url.pathname === '/vendor/elevenlabs-client.js') return serveFile(res, CLIENT_BUNDLE);
 
-  // One front door: public/index.html. A parallel prototype may live under
-  // /studio/, but it is not the app this README and tests describe.
+  // One front door: public/index.html. There is no second build to shadow it.
   const requested = url.pathname.endsWith('/') ? `${url.pathname}index.html` : url.pathname;
   const filePath = normalize(join(PUBLIC_DIR, requested));
   if (!filePath.startsWith(PUBLIC_DIR)) return sendJson(res, 403, { error: 'Forbidden' });

@@ -27,7 +27,7 @@ const els = {
   voiceState: $('voice-state'),
   voiceSub: $('voice-sub'),
   aura: $('aura'),
-  captionSam: $('caption-sam'),
+  captionWave: $('caption-wave'),
   captionUser: $('caption-user'),
   barState: $('bar-state'),
   captionsToggle: $('captions-toggle'),
@@ -104,6 +104,8 @@ const state = {
 };
 
 const MAX_RECONNECTS = 2;
+const RECONNECT_OPENING = 'Right, where were we?';
+
 const recentMessages = new Map();
 const eventLog = [];
 const startedAt = performance.now();
@@ -138,7 +140,7 @@ function setVoice(mode, headline, sub) {
   els.voiceSub.textContent = sub;
   const speeds = { ready: 0.18, connecting: 0.6, listening: 0.3, speaking: 1.5, muted: 0.08, disconnected: 0.08, text: 0.2 };
   orb?.setSpeed(speeds[mode] ?? 0.2);
-  if (mode === 'speaking') els.barState.textContent = 'Sam is talking';
+  if (mode === 'speaking') els.barState.textContent = 'Wave is talking';
   else if (mode === 'listening') els.barState.textContent = 'Listening';
   else if (mode === 'muted') els.barState.textContent = 'Mic off';
   else if (mode === 'text') els.barState.textContent = 'Typing';
@@ -171,7 +173,7 @@ function setCaption(role, text) {
       els.captionUser.hidden = true;
     }, 9000);
   } else {
-    els.captionSam.textContent = text;
+    els.captionWave.textContent = text;
   }
 }
 
@@ -302,6 +304,9 @@ async function startSession({ textOnly = false, reconnect = false } = {}) {
     const response = await fetch(`/api/session${textOnly ? '?transport=text' : ''}`);
     const body = await response.json();
     if (!response.ok) throw new Error(body.error || 'Could not start a session.');
+    // A fresh session gets a varied opening from the server. A reconnect picks
+    // up where it left off instead of replaying an introduction.
+    const firstMessage = reconnect ? RECONNECT_OPENING : body.firstMessage;
 
     if (!textOnly) {
       try {
@@ -313,13 +318,14 @@ async function startSession({ textOnly = false, reconnect = false } = {}) {
         showBanner('Microphone blocked. You can still do this by typing.', 'Use text', () =>
           beginTextMode(),
         );
-        setVoice('ready', 'Talk to Sam', 'Microphone blocked. Try again, or type.');
+        setVoice('ready', 'Talk to Wave', 'Microphone blocked. Try again, or type.');
         return null;
       }
     }
 
     const conversation = await Conversation.startSession({
       ...connectionOptions(body, textOnly),
+      ...(firstMessage ? { overrides: { agent: { firstMessage } } } : {}),
       textOnly,
       clientTools: {
         show_career_cards: (params) => {
@@ -355,7 +361,7 @@ async function startSession({ textOnly = false, reconnect = false } = {}) {
         state.muted = false;
         hideBanner();
         if (textOnly) {
-          setVoice('text', 'Typing to Sam', 'Type in the box under the ideas.');
+          setVoice('text', 'Typing to Wave', 'Type in the box under the ideas.');
         } else {
           setVoice('listening', 'Listening', 'Speak normally. Interrupt any time.');
         }
@@ -372,9 +378,9 @@ async function startSession({ textOnly = false, reconnect = false } = {}) {
         if (state.safetyStop) return;
         const speaking = mode === 'speaking';
         if (speaking) {
-          setVoice(state.muted ? 'muted' : 'speaking', 'Sam is talking', 'Interrupt any time.');
+          setVoice(state.muted ? 'muted' : 'speaking', 'Wave is talking', 'Interrupt any time.');
         } else {
-          setVoice(state.muted ? 'muted' : state.mode === 'text' ? 'text' : 'listening', state.muted ? 'Mic off' : state.mode === 'text' ? 'Typing to Sam' : 'Listening', state.muted ? 'Tap the voice button to unmute.' : 'Your turn.');
+          setVoice(state.muted ? 'muted' : state.mode === 'text' ? 'text' : 'listening', state.muted ? 'Mic off' : state.mode === 'text' ? 'Typing to Wave' : 'Listening', state.muted ? 'Tap the voice button to unmute.' : 'Your turn.');
         }
       },
       onInterruption: () => {
@@ -426,7 +432,7 @@ async function beginTextMode() {
   hideBanner();
   state.mode = 'text';
   setStage('discover');
-  setVoice('text', 'Typing to Sam', 'Type in the box under the ideas.');
+  setVoice('text', 'Typing to Wave', 'Type in the box under the ideas.');
   els.askDiscoverInput.focus();
   if (!state.conversation) await startSession({ textOnly: true });
 }
@@ -518,8 +524,8 @@ function handleMessage(payload) {
     }
   }
 
-  // Outside the three authored scenes, Sam builds the simulation, so the scene
-  // board follows what Sam actually says.
+  // Outside the three authored scenes, Wave builds the simulation, so the scene
+  // board follows what Wave actually says.
   if (!isUser && state.stage === 'simulate' && state.freeform) {
     els.sceneText.textContent = text;
   }
@@ -620,7 +626,7 @@ function confirmProfile() {
   sendContext(
     `They checked and confirmed this corrected profile: ${JSON.stringify(state.profile)}. Move to the Map phase now: call show_career_cards once with three to five careers grounded in that profile, then name up to three out loud.`,
   );
-  // A contextual update does not make Sam take a turn. Their confirmation has to
+  // A contextual update does not make Wave take a turn. Their confirmation has to
   // arrive as a user message, or the conversation waits forever.
   sendUserMessage("That's right, that's me.");
   log('profile-confirmed');
@@ -646,7 +652,7 @@ function fieldFor(card) {
 function renderCards(cards) {
   if (state.safetyStop) return false;
   if (cards.length < 3) {
-    els.cardsNote.textContent = 'Sam could not lay out enough careers. Ask for another set.';
+    els.cardsNote.textContent = 'Wave could not lay out enough careers. Ask for another set.';
     els.cardsEmpty.hidden = state.cards.length > 0;
     return false;
   }
@@ -949,7 +955,7 @@ function resetJourney() {
   state.lastProfileSignature = '';
   els.cardField.replaceChildren();
   els.profileGroups.replaceChildren();
-  els.captionSam.textContent = '';
+  els.captionWave.textContent = '';
   els.captionUser.hidden = true;
   closeSheet();
 }
@@ -1047,7 +1053,7 @@ if (window.FluidOrb) {
   orb = new window.FluidOrb(els.orb, { color: '#ff7a45' });
   orb.setSpeed(0.18);
 }
-setVoice('ready', 'Talk to Sam', 'Two minutes, then try a day of the work.');
+setVoice('ready', 'Talk to Wave', 'Two minutes, then try a day of the work.');
 
 fetch('/api/health')
   .then((r) => r.json())

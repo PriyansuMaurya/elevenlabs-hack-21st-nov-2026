@@ -346,7 +346,7 @@ button {
   margin: 0;
 }
 
-.caption-sam {
+.caption-wave {
   font-size: 20px;
   font-weight: 500;
   line-height: 1.42;
@@ -357,7 +357,7 @@ button {
   overflow: hidden;
 }
 
-.caption-sam:empty {
+.caption-wave:empty {
   display: none;
 }
 
@@ -1208,11 +1208,11 @@ button {
     display: block;
   }
 
-  .app[data-stage="map"] .caption-sam,
-  .app[data-stage="detail"] .caption-sam,
-  .app[data-stage="simulate"] .caption-sam,
-  .app[data-stage="debrief"] .caption-sam,
-  .app[data-stage="ended"] .caption-sam {
+  .app[data-stage="map"] .caption-wave,
+  .app[data-stage="detail"] .caption-wave,
+  .app[data-stage="simulate"] .caption-wave,
+  .app[data-stage="debrief"] .caption-wave,
+  .app[data-stage="ended"] .caption-wave {
     font-size: 16px;
     -webkit-line-clamp: 2;
   }
