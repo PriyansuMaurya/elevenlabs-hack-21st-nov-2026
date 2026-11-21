@@ -35,7 +35,7 @@ somewhere else. `BASE_URL` or `PORT` points them at a different server.
 ## Voice
 
 - [ ] Click the orb. The state moves through Connecting to Listening.
-- [ ] Wave speaks first and the captions match what you hear.
+- [ ] Wave speaks first in the soft female Sarah voice, and the captions match what you hear.
 - [ ] Interrupt Wave mid-sentence. It stops and listens.
 - [ ] Stay silent for a while. Wave does not fill the silence with career advice.
 - [ ] Speak a full answer over background noise. The transcript is close enough to act on.

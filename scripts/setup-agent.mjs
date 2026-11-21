@@ -29,6 +29,9 @@ if (ENV_FILE) {
 const API_KEY = process.env.ELEVENLABS_API_KEY?.trim();
 const EXISTING_AGENT_ID = process.env.ELEVENLABS_AGENT_ID?.trim();
 const VOICE_ID = process.env.ELEVENLABS_VOICE_ID?.trim();
+// Sarah: a warm, softly spoken female voice. The request's default; set
+// ELEVENLABS_VOICE_ID to use a different one.
+const DEFAULT_VOICE_ID = 'EXAVITQu4vr4xnSDxMaL';
 const LLM = process.env.AGENT_LLM?.trim();
 
 if (!API_KEY) {
@@ -198,13 +201,15 @@ function buildBody(prompt, { minimal = false } = {}) {
       ],
     };
     // Voice settings for a natural, conversational agent.
+    // Sarah, at a gentle pace and with enough stability that the tone stays
+    // soft instead of swinging into a performance.
     conversationConfig.tts = {
       model_id: 'eleven_v4_turbo',
-      ...(VOICE_ID ? { voice_id: VOICE_ID } : {}),
-      stability: 0.4,
-      speed: 1.0,
-      similarity_boost: 0.8,
-      expressive_mode: true,
+      voice_id: VOICE_ID || DEFAULT_VOICE_ID,
+      stability: 0.45,
+      speed: 0.95,
+      similarity_boost: 0.85,
+      expressive_mode: false,
     };
 
     // Allow users to interrupt without ignoring their short responses.
