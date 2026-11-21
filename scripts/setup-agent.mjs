@@ -105,6 +105,9 @@ function buildBody(prompt, { minimal = false } = {}) {
   const agent = {
     first_message: FIRST_MESSAGE,
     language: 'en',
+    // The greeting is the one turn nobody can answer yet. Without this, saying
+    // "hey" back cuts Sam off half a sentence in, every single session.
+    disable_first_message_interruptions: true,
     prompt: {
       prompt,
       tools,
@@ -134,6 +137,10 @@ function buildBody(prompt, { minimal = false } = {}) {
     // Turn taking. Without these the agent treats any short noise the mic picks
     // up ("yeah", "okay", a cough) as a finished turn and cuts its own audio
     // mid-sentence, which reads as the agent interrupting itself.
+    //
+    // The ignore list is taken from real transcripts: these are the exact things
+    // users said that cut Sam off mid-sentence. Matching is case-insensitive and
+    // exact, so every form needs its own entry.
     conversationConfig.turn = {
       turn_eagerness: 'patient',
       interruption_ignore_terms: [
@@ -143,11 +150,29 @@ function buildBody(prompt, { minimal = false } = {}) {
         'ok',
         'mm',
         'mm-hmm',
+        'mhm',
         'hmm',
+        'hm',
         'uh',
+        'um',
+        'oh',
+        'ah',
         'right',
+        'alright',
         'sure',
+        'cool',
+        'nice',
+        'hey',
+        'hi',
+        'hello',
+        'thanks',
+        'thank you',
+        'cheers',
+        'gotcha',
         'i',
+        'nothing',
+        'can you hear me',
+        'are you there',
       ],
       interruption_ignore_term_languages: ['en'],
       merge_with_default_ignore_terms: true,

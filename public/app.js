@@ -23,6 +23,34 @@ let starting = false;
 let cardsShown = false;
 let transcriptTouched = false;
 const seenMessages = new Set();
+const MAX_RECONNECTS = 2;
+let reconnectTimer = null;
+let reconnectAttempts = 0;
+
+/* ---------------- event log ---------------- */
+
+// Every stop of Sam's speech has to be explainable. This keeps a timestamped
+// record of mode changes, interruptions and disconnects, and pairs each
+// interruption with whatever the user said next, if anything. Memory only, and
+// readable from the console: __nextStep.events() / __nextStep.cutouts().
+const eventLog = [];
+const sessionStart = performance.now();
+let speakingSince = 0;
+let openInterruption = null;
+
+function logEvent(type, detail = {}) {
+  const entry = { at: Math.round(performance.now() - sessionStart), type, ...detail };
+  eventLog.push(entry);
+  if (eventLog.length > 1000) eventLog.shift();
+  console.debug(`[next-step ${entry.at}ms] ${type}`, detail);
+  return entry;
+}
+
+// A cut-out is an interruption that no user speech explains. The server decides
+// to interrupt; the transcript tells us afterwards whether words arrived.
+function cutouts() {
+  return eventLog.filter((e) => e.type === 'interruption' && !e.heard);
+}
 
 /* ---------------- status ---------------- */
 
@@ -84,6 +112,11 @@ function handleMessage(payload) {
   const text = (payload.message ?? '').trim();
   if (!text) return;
   const isUser = payload.role === 'user' || payload.source === 'user';
+  if (isUser && openInterruption) {
+    openInterruption.heard = text;
+    openInterruption = null;
+  }
+  logEvent(isUser ? 'user-said' : 'agent-said', { text: text.slice(0, 80) });
   const key = `${isUser ? 'u' : 'a'}:${text}`;
   if (seenMessages.has(key)) return;
   seenMessages.add(key);
@@ -183,12 +216,52 @@ function showHelpline() {
 
 /* ---------------- session ---------------- */
 
-async function start() {
+// A dropped socket is normal on hotel wifi and on a laptop that slept. Retry
+// quietly before telling the user anything, and only give up after two tries.
+function scheduleReconnect() {
+  reconnectAttempts += 1;
+  clearTimeout(reconnectTimer);
+  setStatus('connecting', 'Reconnecting…');
+  setHint('Connection dropped. Reconnecting…', true);
+  logEvent('reconnect-scheduled', { attempt: reconnectAttempts });
+
+  reconnectTimer = setTimeout(
+    () => {
+      start({ reconnect: true });
+    },
+    800 * reconnectAttempts,
+  );
+}
+
+function handleDisconnect(details) {
+  const reason = details?.reason ?? 'unknown';
+  logEvent('disconnect', {
+    reason,
+    message: details?.message,
+    closeCode: details?.closeCode,
+  });
+  conversation = null;
+  starting = false;
+  els.mic.disabled = false;
+  els.mic.classList.remove('is-speaking');
+  setMic(false);
+
+  // A dropped connection is worth retrying silently; the user's own hang-up is
+  // not. Nothing alarming is shown until a retry actually fails.
+  if (reason === 'error' && reconnectAttempts < MAX_RECONNECTS) {
+    scheduleReconnect();
+    return;
+  }
+  setStatus('idle', 'Ready when you are');
+  setHint('Best with headphones. Nothing is saved.');
+}
+
+async function start({ reconnect = false } = {}) {
   if (starting || conversation) return;
   starting = true;
   els.mic.disabled = true;
-  setStatus('connecting', 'Connecting…');
-  setHint('Allow the microphone if your browser asks.');
+  setStatus('connecting', reconnect ? 'Reconnecting…' : 'Connecting…');
+  if (!reconnect) setHint('Allow the microphone if your browser asks.');
 
   try {
     const response = await fetch('/api/session');
@@ -227,26 +300,51 @@ async function start() {
         },
       },
 
-      onConnect: () => {
+      onConnect: ({ conversationId }) => {
+        logEvent('connect', { conversationId });
+        reconnectAttempts = 0;
+        openInterruption = null;
+        speakingSince = 0;
         setStatus('connected', 'Listening');
         setMic(true);
         setHint('Speak normally. You can interrupt at any point.');
       },
-      onDisconnect: () => {
-        conversation = null;
-        starting = false;
-        els.mic.disabled = false;
-        setMic(false);
-        setStatus('idle', 'Ready when you are');
-        setHint('Best with headphones. Nothing is saved.');
+      onDisconnect: handleDisconnect,
+      onStatusChange: ({ status }) => {
+        logEvent('status', { status });
       },
       onMessage: handleMessage,
       onModeChange: ({ mode }) => {
         const speaking = mode === 'speaking';
+        if (speaking) {
+          speakingSince = performance.now();
+          logEvent('agent-speaking');
+        } else if (speakingSince) {
+          logEvent('agent-stopped', { spokeMs: Math.round(performance.now() - speakingSince) });
+          speakingSince = 0;
+        }
         els.mic.classList.toggle('is-speaking', speaking);
         setStatus('connected', speaking ? 'Sam is talking' : 'Listening');
       },
+      // Fires when the server cuts Sam off. Whatever the user says next is
+      // attached to this entry, so a cut-out with no words is visible as such.
+      onInterruption: (props) => {
+        speakingSince = 0;
+        openInterruption = logEvent('interruption', {
+          eventId: props?.event_id,
+          heard: null,
+        });
+      },
+      onVadScore: ({ vadScore }) => {
+        if (vadScore >= 0.5) {
+          const last = eventLog[eventLog.length - 1];
+          // Collapse a burst of high VAD frames into one entry.
+          if (last?.type === 'vad' && performance.now() - last._t < 500) return;
+          logEvent('vad', { vadScore: Number(vadScore.toFixed(2)), _t: performance.now() });
+        }
+      },
       onError: (message) => {
+        logEvent('error', { message: String(message) });
         console.error('[elevenlabs]', message);
         setHint(String(message), true);
         setStatus('error', 'Something went wrong');
@@ -269,6 +367,8 @@ async function start() {
 }
 
 async function stop() {
+  clearTimeout(reconnectTimer);
+  reconnectAttempts = MAX_RECONNECTS; // an explicit hang-up is not a drop
   const session = conversation;
   conversation = null;
   setMic(false);
@@ -302,6 +402,13 @@ window.__nextStep = {
   showHelpline,
   // Read-only mic level, for checking the input is live without muting anything.
   mic: () => (conversation ? Number(conversation.getInputVolume().toFixed(4)) : null),
+  // Timestamped session record: speech start/stop, interruptions, disconnects.
+  events: () => eventLog,
+  cutouts,
+  // Rehearsal aid: exercise the dropped-connection path without unplugging
+  // wifi. Abandons the live session rather than ending it, so the retry is
+  // exactly what a real drop produces.
+  simulateDrop: () => handleDisconnect({ reason: 'error', message: 'simulated drop' }),
 };
 
 // Pre-flight the config so a missing agent id shows up before the demo starts.
