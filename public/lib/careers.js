@@ -493,32 +493,17 @@ function matches(entry, haystack) {
 }
 
 function genericDetail(card) {
-  const tags = (card.tags ?? []).map((t) => String(t).toLowerCase());
-  const practical = tags.some((t) => /hands|outdoor|practical|build|fix|make/.test(t));
-  const people = tags.some((t) => /people|team|care|help|talk/.test(t));
   return {
     id: card.id,
     title: card.title,
     whatYouDo: card.oneLiner || `You do the day-to-day work of a ${card.title.toLowerCase()}.`,
-    daily: [
-      people
-        ? 'Talk to the people you are doing the work for, and work out what they actually need.'
-        : 'Start the day by checking what needs doing and what is already in progress.',
-      practical
-        ? 'Use tools, equipment or materials to get a real job finished.'
-        : 'Work through the main task on a screen or on paper, checking details as you go.',
-      'Fix the thing that goes wrong, or tell someone clearly that it cannot be fixed today.',
-      'Record what you did and hand over to whoever comes next.',
+    daily: [      'The daily tasks depend on the employer and specialism; check with someone doing this work.',
+      'Ask a careers advisor or someone in the role for examples of a typical working day.',
     ],
-    skills: [
-      'Turning a vague request into a clear task',
-      'Noticing when something is wrong',
-      practical ? 'Safe, careful use of equipment' : 'Working accurately under time pressure',
-      people ? 'Talking to people who are worried or in a hurry' : 'Writing down what you changed',
-    ],
-    subjects: ['English', 'Maths', practical ? 'A practical or technical subject' : 'A subject you actually enjoy'],
+    skills: ['Skills vary by role and employer; check with a careers advisor.'],
+    subjects: ['Relevant subjects vary; check current guidance for this role.'],
     routes: (card.routes ?? []).map((detail) => ({ type: 'other', detail })),
-    related: (card.tags ?? []).slice(0, 3),
+    related: ['Ask a careers advisor about related roles.'],
     note: 'This is a sketch: the card did not match our detailed library, so check the specifics with a careers advisor.',
   };
 }
@@ -528,7 +513,7 @@ function genericDetail(card) {
 export function buildCareerDetail(card) {
   const key = `${card.id}|${card.title}`;
   if (CACHE.has(key)) return CACHE.get(key);
-  const haystack = normalize(`${card.id} ${card.title} ${(card.tags ?? []).join(' ')}`);
+  const haystack = normalize(`${card.id} ${card.title}`);
   const entry = LIBRARY.find((candidate) => matches(candidate, haystack));
   const detail = entry
     ? { ...entry, id: card.id, title: card.title, note: null }

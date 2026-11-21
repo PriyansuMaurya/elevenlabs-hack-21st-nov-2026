@@ -13,7 +13,7 @@ export function clip(text, max) {
 }
 
 function asList(value) {
-  if (Array.isArray(value)) return value.map((v) => String(v).trim()).filter(Boolean);
+  if (Array.isArray(value)) return value.filter((v) => typeof v === 'string').map((v) => v.trim()).filter(Boolean);
   if (typeof value === 'string' && value.trim()) return [value.trim()];
   return [];
 }
@@ -49,12 +49,12 @@ export function validateCards(input) {
       rejected.push('not-a-card');
       continue;
     }
-    const title = String(candidate.title ?? candidate.name ?? '').trim();
+    const title = typeof (candidate.title ?? candidate.name) === 'string' ? (candidate.title ?? candidate.name).trim() : '';
     if (!title) {
       rejected.push('no-title');
       continue;
     }
-    const id = String(candidate.id ?? slugify(title, index)).trim();
+    const id = typeof candidate.id === 'string' && candidate.id.trim() ? candidate.id.trim() : slugify(title, index);
     if (seen.has(id)) {
       rejected.push('duplicate');
       continue;
@@ -64,18 +64,20 @@ export function validateCards(input) {
       rejected.push('no-routes');
       continue;
     }
+    const rawDescription = candidate.oneLiner ?? candidate.one_liner ?? candidate.what;
+    const rawReason = candidate.fitReason ?? candidate.fit_reason ?? candidate.why;
+    const oneLiner = typeof rawDescription === 'string' ? clip(rawDescription, CARD_LIMITS.oneLiner) : '';
+    const fitReason = typeof rawReason === 'string' ? clip(rawReason, CARD_LIMITS.fitReason) : '';
+    if (!oneLiner || !fitReason || !routes.some((route) => /apprentice|trainee|plc|further education|portfolio|self.taught|on.the.job|work.based|training|etb/i.test(route))) {
+      rejected.push('missing-description-fit-or-non-university-route');
+      continue;
+    }
     seen.add(id);
     cards.push({
       id,
       title,
-      oneLiner: clip(
-        candidate.oneLiner ?? candidate.one_liner ?? candidate.what ?? '',
-        CARD_LIMITS.oneLiner,
-      ),
-      fitReason: clip(
-        candidate.fitReason ?? candidate.fit_reason ?? candidate.why ?? '',
-        CARD_LIMITS.fitReason,
-      ),
+      oneLiner,
+      fitReason,
       routes,
       tags: asList(candidate.tags),
     });
@@ -86,5 +88,5 @@ export function validateCards(input) {
 }
 
 export function cardsSignature(cards) {
-  return cards.map((c) => `${c.id}:${c.title}:${c.oneLiner}`).join('|');
+  return JSON.stringify(cards);
 }

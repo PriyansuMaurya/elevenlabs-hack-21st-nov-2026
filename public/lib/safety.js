@@ -1,7 +1,7 @@
 /* Safeguarding detection.
-   Runs on every user transcript, before the agent has a chance to answer, so a
-   disclosure can never be swallowed by a dropped turn, a reconnect or a client
-   bug. The prompt still handles the conversation; this is the floor.
+   Checks typed messages before sending and voice transcripts when received.
+   Voice audio has already reached the provider by the time a transcript arrives.
+   Phrase matching is a limited safety floor, not a guarantee of detection.
 
    Deliberately phrase-level rather than single words: "this essay is killing
    me" must not stop the session, "I want to kill myself" must. */
@@ -92,6 +92,6 @@ export const SUPPORT_HEADLINE = "We've stopped the careers chat. You're not in t
 
 export const HELPLINES = [
   { name: 'Emergency', numbers: '112 or 999', note: 'if you or someone else is in danger, right now' },
-  { name: 'Childline', numbers: '1800 66 66 66', note: 'free, any time, for anyone under 18' },
+  { name: 'Childline', numbers: '1800 66 66 66', note: 'free, any time, for children and young people up to age 18' },
   { name: 'Samaritans', numbers: '116 123', note: 'free, 24 hours, any age' },
 ];

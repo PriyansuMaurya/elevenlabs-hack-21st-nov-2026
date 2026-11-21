@@ -64,6 +64,7 @@ const els = {
   debriefQuote: $('debrief-quote'),
   debriefNext: $('debrief-next'),
   feelChips: $('feel-chips'),
+  retrySimulation: $('retry-simulation'),
   tryAnother: $('try-another'),
   stopNow: $('stop-now'),
   talkAgain: $('talk-again'),
@@ -259,6 +260,9 @@ function stopForSafety(text, { alreadySent = false } = {}) {
   closeSheet();
   setStage('ended');
   setVoice('muted', 'Careers stopped', 'Support is on screen.');
+  if (state.mode === 'voice') {
+    try { state.conversation?.setMicMuted(true); } catch (error) { log('mic-toggle-failed', { message: String(error) }); }
+  }
   showSupport();
   log('safety-stop', { category: result.category, urgent: result.urgent });
 
@@ -411,8 +415,8 @@ async function startSession({ textOnly = false, reconnect = false } = {}) {
     state.starting = false;
     state.conversation = null;
     setVoice('disconnected', 'Not connected', 'Check the connection and try again.');
-    showBanner(error?.message ? String(error.message) : 'Could not connect.', 'Try again', () =>
-      startSession({ textOnly, reconnect: true }),
+    showBanner(error?.message ? String(error.message) : 'Could not connect.', 'Use text', () =>
+      beginTextMode(),
     );
     return null;
   }
@@ -466,7 +470,8 @@ async function toggleMic() {
     return;
   }
   if (state.mode === 'text') {
-    els.askDiscoverInput.focus();
+    const input = state.stage === 'detail' ? els.askSheetInput : state.stage === 'profile' ? els.askProfileInput : state.stage === 'simulate' ? els.askMoveInput : els.askDiscoverInput;
+    input.focus();
     return;
   }
   state.muted = !state.muted;
@@ -595,7 +600,7 @@ function renderProfile(params) {
         button.remove();
         state.profile[key] = state.profile[key].filter((v) => v !== value);
         sendContext(`Correction: "${value}" is wrong for ${key}. Do not use it again.`);
-        log('profile-correction', { label: key, value });
+        log('profile-correction', { label: key });
       });
       chips.append(button);
     });
@@ -904,6 +909,7 @@ function finishSimulation() {
   els.debriefQuote.textContent = debrief
     ? `${choices.map((c) => c.label).join(', then ')}. ${debrief.hardPart}`
     : `You talked it through in your own words. No one can tell you whether you got it right; you find out later, or you never do.`;
+  els.retrySimulation.hidden = !state.selectedCard;
   els.debriefNext.textContent = debrief?.nextStep
     ? `One thing to try this week: ${debrief.nextStep}`
     : 'One thing to try this week: ask someone who does this job what their worst Tuesday looks like.';
@@ -998,6 +1004,9 @@ els.feelChips.addEventListener('click', (event) => {
   sendUserMessage(`It felt like: ${chip.dataset.feel}`);
   log('feel', { feel: chip.dataset.feel });
 });
+els.retrySimulation.addEventListener('click', () => {
+  if (!state.safetyStop && state.selectedCard) startSimulation();
+});
 els.tryAnother.addEventListener('click', () => {
   state.run = null;
   state.scenario = null;
@@ -1059,7 +1068,7 @@ window.__nextStep = {
   openCard: (payload) => {
     const { cards } = validateCards(payload);
     if (!cards.length) return false;
-    renderCards(cards);
+    if (!renderCards(cards)) return false;
     openSheet(cards[0]);
     return true;
   },

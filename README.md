@@ -20,8 +20,7 @@ npm run setup-agent            # creates the agent, writes ELEVENLABS_AGENT_ID
 npm start                      # http://localhost:5173
 ```
 
-`npm run setup-agent` is idempotent: re-run it after editing the prompt and it patches the same
-agent. It reads `.env.local` first, then `.env`, and writes the agent id back to the file it used.
+`npm run setup-agent` updates the configured ElevenLabs agent, or creates one if no agent ID is configured. It reads `.env.local` first, then `.env`, and writes the agent id back to the file it used. Run it only when you intend to change the remote agent. Copy `.env.example` for supported variables. For deployment, serve the Node app over HTTPS, set these variables in the hosting environment, and keep the API key server-side; configure the agent and review ElevenLabs retention settings separately.
 
 For voice you need a microphone and `localhost` or HTTPS, because WebRTC requires a secure context.
 Headphones stop the agent hearing itself. If the microphone is blocked, the page offers the text
@@ -38,7 +37,7 @@ path instead.
 | Detail | What a day looks like, skills, school subjects, Irish routes in, related work, and an AI-generated label. |
 | Simulate | An authored scenario for the three polished careers, or a scene Sam builds for anything else. Choices change what happens next. |
 | Debrief | What surprised people, one honest hard part, one thing to try this week. Then another career or stop. |
-| Ended | Nothing is saved. Coming back starts fresh. |
+| Ended | The local profile can be reset; provider retention depends on ElevenLabs settings. |
 
 ## What's where
 
@@ -59,20 +58,21 @@ path instead.
 
 ## Client tools
 
-- `show_profile({ summary, interests, preferences, barriers })` — shows the profile for correction.
+- `show_profile({ summary, interests, dislikes, preferences, barriers })` — shows the profile for correction.
   The app refuses an empty or repeated profile.
 - `show_career_cards({ cards: [{ id, title, oneLiner, fitReason, routes, tags }] })` — one call per
   set. Limits: 5 cards, 20-word one-liner, 15-word fit reason, at least one route.
 - `show_helpline()` — a second safety layer. It stops careers and shows the support card. The app
-  does not wait for it: the local classifier stops the session before a disclosure is even sent.
+  does not wait for it: typed disclosures are stopped before sending, and voice transcripts on
+  arrival.
 
 ## Safeguarding
 
-Every typed or transcribed user message is checked locally before it reaches the agent. A disclosure
+Typed messages are checked locally before sending; voice transcripts are checked after the audio reaches ElevenLabs. Phrase matching is limited and cannot reliably catch every disclosure. A detected disclosure
 closes the career sheet, ends the careers flow, moves focus to a support card, and lists Emergency
 (112 or 999), Childline (1800 66 66 66) and Samaritans (116 123) as callable links. Closing the card
 lands on the ended screen; "Talk to Sam" reopens support rather than restarting careers. The same
-check runs after a reconnect, so a dropped connection cannot lose it.
+check runs on messages received after a reconnect, but cannot detect audio or messages that are not received.
 
 This is a floor, not a clinical service. The prompt tells Sam to stay calm, not ask for details, not
 promise confidentiality, and point to a trusted adult.
@@ -93,11 +93,9 @@ Both browser suites exit non-zero on any failed check or page exception.
 
 ## Demo and manual QA
 
-- [`docs/DEMO.md`](docs/DEMO.md) — a five-minute script, including what to say and what to point at.
+- [`docs/DEMO.md`](docs/DEMO.md) — a three-minute script and fallback plan.
 - [`docs/QA.md`](docs/QA.md) — the manual pass, including microphone, reconnect and accessibility.
 
 ## Constraints held to
 
-No accounts, database, analytics, pathway knowledge base, or Irish-language pass. One agent, one
-prompt, three authored simulations, and an honest fallback when a career has no authored scene. No
-salaries, laws, exact qualifications or invented course names. Nothing is stored.
+No accounts, database, analytics, pathway knowledge base, or Irish-language pass. The page keeps the profile in memory for the session; conversations and audio are sent to ElevenLabs, whose retention settings must be reviewed separately. Career details are estimates and should be checked with a careers advisor.

@@ -25,7 +25,8 @@ npm run test:e2e
 npm run test:safety
 ```
 
-Expected: 21/21 unit, 35/35 persona checks, 77/77 safety checks, `page exceptions: none`.
+Expected: every suite exits zero with `page exceptions: none`. If a suite fails, fix the cause
+before demoing; do not treat a partial pass as a green light.
 
 The browser suites need `npm start` first. They use Chrome at
 `C:/Program Files/Google/Chrome/Application/chrome.exe`; change that path in the test if Chrome is

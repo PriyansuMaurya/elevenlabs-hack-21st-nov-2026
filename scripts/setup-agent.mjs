@@ -118,6 +118,11 @@ const tools = [
           items: { type: 'string', description: 'One concrete interest, in their words.' },
           description: 'Two to four concrete interests or things they actually do.',
         },
+        dislikes: {
+          type: 'array',
+          items: { type: 'string', description: 'One task or environment they want to avoid.' },
+          description: 'Only include dislikes the young person actually mentioned.',
+        },
         preferences: {
           type: 'array',
           items: { type: 'string', description: 'One preferred setting, in plain words.' },
