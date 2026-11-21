@@ -5,7 +5,7 @@
 
 import { validateCards, cardsSignature } from './lib/cards.js';
 import { classifySafety, HELPLINES } from './lib/safety.js';
-import { buildCareerDetail, detailToContext, routeTypeLabel } from './lib/careers.js';
+import { buildCareerDetail, clearCareerCache, detailToContext, routeTypeLabel } from './lib/careers.js';
 import {
   scenarioForCard,
   createRun,
@@ -82,7 +82,7 @@ const els = {
 };
 
 const state = {
-  stage: 'intro',
+  stage: 'discover',
   mode: null, // voice | text
   conversation: null,
   starting: false,
@@ -197,12 +197,12 @@ function hideBanner() {
 
 function sendContext(text) {
   if (!state.conversation?.sendContextualUpdate) {
-    log('context-skipped', { text: text.slice(0, 90) });
+    log('context-skipped');
     return false;
   }
   try {
     state.conversation.sendContextualUpdate(text);
-    log('context-sent', { text: text.slice(0, 90) });
+    log('context-sent');
     return true;
   } catch (error) {
     log('context-failed', { message: String(error) });
@@ -214,7 +214,7 @@ function sendUserMessage(text) {
   if (!state.conversation?.sendUserMessage) return false;
   try {
     state.conversation.sendUserMessage(text);
-    log('user-typed', { text: text.slice(0, 90) });
+    log('user-typed');
     return true;
   } catch (error) {
     log('send-failed', { message: String(error) });
@@ -227,17 +227,17 @@ function sendUserMessage(text) {
 
 function renderHelplines() {
   els.supportLines.replaceChildren(
-    ...HELPLINES.map((item) => {
+    ...HELPLINES.flatMap((item) => item.numbers.split(' or ').map((numberText) => {
       const link = document.createElement('a');
       link.className = 'support-call';
-      link.href = `tel:${item.numbers.replace(/[^\d]/g, '')}`;
+      link.href = `tel:${numberText.replace(/[^\d]/g, '')}`;
       const name = document.createElement('span');
       name.textContent = item.name;
       const number = document.createElement('strong');
-      number.textContent = item.numbers;
+      number.textContent = numberText;
       link.append(name, number);
       return link;
-    }),
+    })),
   );
 }
 
@@ -247,7 +247,7 @@ function showSupport() {
   requestAnimationFrame(() => els.supportDismiss.focus());
 }
 
-function stopForSafety(text) {
+function stopForSafety(text, { alreadySent = false } = {}) {
   if (state.safetyStop) return false;
   const result = classifySafety(text);
   if (!result.triggered) return false;
@@ -258,14 +258,14 @@ function stopForSafety(text) {
   state.freeform = false;
   closeSheet();
   setStage('ended');
-  setVoice('muted', 'Careers stopped', 'Support is on screen. You can still talk to Sam.');
+  setVoice('muted', 'Careers stopped', 'Support is on screen.');
   showSupport();
   log('safety-stop', { category: result.category, urgent: result.urgent });
 
   sendContext(
     `SAFEGUARDING: they just said: "${text}". Stop the careers conversation completely and do not return to it. Respond calmly in one or two short sentences. Do not ask for details or promise confidentiality. Point them to a trusted adult and the Childline number on the support card, and say the card is on screen. If there is any risk of immediate danger, tell them to call 112 or 999. Stay with them.`,
   );
-  if (state.conversation?.sendUserMessage) {
+  if (!alreadySent && state.conversation?.sendUserMessage) {
     try {
       state.conversation.sendUserMessage(text);
     } catch {
@@ -344,6 +344,7 @@ async function startSession({ textOnly = false, reconnect = false } = {}) {
         },
       },
       onConnect: ({ conversationId }) => {
+        if (state.safetyStop) return;
         log('connect', { conversationId, textOnly, reconnect });
         state.mode = textOnly ? 'text' : 'voice';
         state.reconnectAttempts = 0;
@@ -373,10 +374,12 @@ async function startSession({ textOnly = false, reconnect = false } = {}) {
         }
       },
       onInterruption: () => {
+        if (state.safetyStop) return;
         log('interruption');
         setVoice(state.mode === 'text' ? 'text' : 'listening', 'Listening', 'Your turn.');
       },
       onError: (message) => {
+        if (state.safetyStop) return;
         log('error', { message: String(message) });
         console.error('[elevenlabs]', message);
         showBanner(String(message));
@@ -384,8 +387,23 @@ async function startSession({ textOnly = false, reconnect = false } = {}) {
       },
     });
 
+    if (state.safetyStop) {
+      state.starting = false;
+      await conversation.endSession();
+      return null;
+    }
     state.conversation = conversation;
     state.starting = false;
+    if (reconnect) {
+      const profile = state.profile ? JSON.stringify(state.profile) : 'not yet confirmed';
+      sendContext(`Reconnected session. Current stage: ${state.stage}. Profile: ${profile}. Do not repeat the greeting, answered questions, or interrupted speech. Continue from the current stage.`);
+      if (state.stage === 'detail' && state.detail) sendContext(detailToContext(state.detail));
+      if (state.stage === 'simulate' && state.scenario && state.run) {
+        sendContext(state.awaitingNext
+          ? `The user has completed a decision. Wait for them to continue. Completed choices: ${state.run.choices.map((choice) => choice.label).join('; ')}.`
+          : scenarioContext(state.scenario, state.run));
+      }
+    }
     if (els.bannerText.textContent.includes('Microphone blocked')) hideBanner();
     return conversation;
   } catch (error) {
@@ -483,11 +501,11 @@ function handleMessage(payload) {
     log('message-replay-ignored', { role: isUser ? 'user' : 'agent' });
     return;
   }
-  log(isUser ? 'user-said' : 'agent-said', { text: text.slice(0, 90) });
+  log(isUser ? 'user-said' : 'agent-said', isUser ? {} : { text: text.slice(0, 90) });
   setCaption(isUser ? 'user' : 'agent', text);
 
   if (isUser) {
-    if (stopForSafety(text)) return;
+    if (stopForSafety(text, { alreadySent: true })) return;
     if (state.stage === 'simulate' && state.run && !state.awaitingNext && !text.includes('?')) {
       const stage = currentStage(state.run);
       const option = state.scenario ? matchOption(text, stage) : null;
@@ -513,9 +531,12 @@ async function submitTyped(text, input) {
   if (!state.conversation) {
     if (!state.mode) state.mode = 'text';
     const conversation = await startSession({ textOnly: true });
-    if (!conversation) return;
+    if (!conversation) {
+      if (input) input.value = text;
+      return;
+    }
   }
-  sendUserMessage(text);
+  if (!sendUserMessage(text) && input) input.value = text;
 }
 
 /* ---------------- profile ---------------- */
@@ -529,14 +550,16 @@ function asList(value) {
 }
 
 function renderProfile(params) {
+  if (state.safetyStop) return false;
   const profile = {
     summary: String(params.summary ?? params.sentence ?? '').trim(),
     interests: asList(params.interests ?? params.likes ?? params.into),
     preferences: asList(params.preferences ?? params.environment ?? params.settings),
     barriers: asList(params.barriers ?? params.blockers ?? params.gets_in_the_way),
+    dislikes: asList(params.dislikes ?? params.avoids),
   };
   const signature = JSON.stringify(profile);
-  if (!profile.summary && !profile.interests.length && !profile.preferences.length && !profile.barriers.length) {
+  if (!profile.summary && !profile.interests.length && !profile.preferences.length && !profile.barriers.length && !profile.dislikes.length) {
     log('profile-rejected', { reason: 'empty' });
     return false;
   }
@@ -581,6 +604,7 @@ function renderProfile(params) {
   };
 
   group('Interests', 'interests', profile.interests);
+  group('Things to avoid', 'dislikes', profile.dislikes);
   group('Where they would like to be', 'preferences', profile.preferences);
   group('What gets in the way', 'barriers', profile.barriers);
   setStage('profile');
@@ -589,7 +613,7 @@ function renderProfile(params) {
 
 function confirmProfile() {
   sendContext(
-    'They checked the profile on screen and confirmed it. Move to the Map phase now: call show_career_cards once with three to five careers grounded in that profile, then name up to three out loud.',
+    `They checked and confirmed this corrected profile: ${JSON.stringify(state.profile)}. Move to the Map phase now: call show_career_cards once with three to five careers grounded in that profile, then name up to three out loud.`,
   );
   // A contextual update does not make Sam take a turn. Their confirmation has to
   // arrive as a user message, or the conversation waits forever.
@@ -615,9 +639,10 @@ function fieldFor(card) {
 }
 
 function renderCards(cards) {
-  if (!cards.length) {
-    els.cardsNote.textContent = 'Sam could not lay those out. Ask for another set.';
-    els.cardsEmpty.hidden = false;
+  if (state.safetyStop) return false;
+  if (cards.length < 3) {
+    els.cardsNote.textContent = 'Sam could not lay out enough careers. Ask for another set.';
+    els.cardsEmpty.hidden = state.cards.length > 0;
     return false;
   }
   const signature = cardsSignature(cards);
@@ -699,6 +724,7 @@ function section(title, content) {
 }
 
 function openSheet(card) {
+  if (state.safetyStop) return;
   const detail = buildCareerDetail(card);
   state.selectedCard = card;
   state.detail = detail;
@@ -776,6 +802,13 @@ function renderStage() {
     els.sceneOptions.append(button);
   });
 
+  const exit = document.createElement('button');
+  exit.type = 'button';
+  exit.className = 'button-secondary';
+  exit.textContent = 'Leave simulation';
+  exit.addEventListener('click', exitSimulation);
+  els.sceneOptions.append(exit);
+
   setStage('simulate');
   sendContext(
     `${scenarioContext(state.scenario, state.run)} Do not read the options out as a list. Let them answer in their own words, or tap one.`,
@@ -801,6 +834,22 @@ function takeDecision(optionId, viaVoice = false) {
     else renderStage();
   });
   els.sceneOptions.append(next);
+  const change = document.createElement('button');
+  change.type = 'button';
+  change.className = 'button-secondary';
+  change.textContent = 'Change my decision';
+  change.addEventListener('click', () => {
+    state.run = { ...state.run, stage: state.run.stage - 1, choices: state.run.choices.slice(0, -1), finished: false };
+    sendContext('They want to change their last decision. Return to that decision without replaying the scene.');
+    renderStage();
+  });
+  els.sceneOptions.append(change);
+  const exit = document.createElement('button');
+  exit.type = 'button';
+  exit.className = 'button-secondary';
+  exit.textContent = 'Leave simulation';
+  exit.addEventListener('click', exitSimulation);
+  els.sceneOptions.append(exit);
   announce(result.outcome);
   sendContext(
     `They chose: "${result.option.label}". What happens: ${result.outcome} React in one or two short sentences, in character. Do not restart the scene or summarise the whole scenario.`,
@@ -833,6 +882,12 @@ function startSimulation() {
     finish.textContent = 'Finish and look back';
     finish.addEventListener('click', () => finishSimulation());
     els.sceneOptions.append(finish);
+    const exit = document.createElement('button');
+    exit.type = 'button';
+    exit.className = 'button-secondary';
+    exit.textContent = 'Leave simulation';
+    exit.addEventListener('click', exitSimulation);
+    els.sceneOptions.append(exit);
     setStage('simulate');
     sendContext(
       `SIMULATION for ${state.detail.title}. ${detailToContext(state.detail)} Build a three-minute scene now: one ordinary morning, one concrete problem, two or three decisions. Set it in one or two sentences, then ask the first decision. Do not quiz them on facts.`,
@@ -874,6 +929,8 @@ function exitSimulation() {
 /* ---------------- reset ---------------- */
 
 function resetJourney() {
+  clearCareerCache();
+  recentMessages.clear();
   state.profile = null;
   state.cards = [];
   state.selectedCard = null;

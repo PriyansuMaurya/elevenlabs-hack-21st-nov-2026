@@ -31,7 +31,7 @@ path instead.
 
 | Stage | What happens |
 | --- | --- |
-| Welcome | Says what this is, that Sam is AI, and that they can stop. Captions can be turned off. |
+| Landing | Says what this is, that Sam is AI, and that they can stop. Voice orb and a typing box are both on screen. |
 | Discover | Five or six adaptive questions, one at a time. Sam calls `show_profile` and reads the profile back. |
 | Profile | Concrete chips they can remove. Confirming it is what moves the conversation on. |
 | Map | Three to five cards from `show_career_cards`, each with a reason tied to something they said. |
@@ -86,10 +86,10 @@ npm run test:safety         # needs npm start; no agent session required
 ```
 
 The browser suites use Chrome over CDP, with no test dependencies. Set `BASE_URL` or `PORT` if the
-server is not on `localhost:5173`. `test:safety` drives the form at the welcome, detail and simulation
+server is not on `localhost:5173`. `test:safety` drives the form at the landing, detail and simulation
 screens and checks the support card, focus, closed sheet and all three helplines for every phrase.
 
-Last run: 21/21 unit, 35/35 persona checks, 77/77 safety checks, no page exceptions.
+Both browser suites exit non-zero on any failed check or page exception.
 
 ## Demo and manual QA
 

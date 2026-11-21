@@ -7,8 +7,8 @@ and `localhost` or HTTPS. Use headphones so Sam does not hear the room.
 
 1. `npm start`, then load the page and check the orb says **Talk to Sam**.
 2. Allow the microphone when asked. Speak one sentence to confirm the level meter moves.
-3. If the room is noisy, click **Type instead** and run the same path by typing. Say so out loud;
-   it is a feature, not a fallback apology.
+3. If the room is noisy, type in the box under the headline and run the same path by typing. Say
+   so out loud; it is a feature, not a fallback apology.
 4. Keep `docs/QA.md` nearby for the checks you do not want to do live.
 
 ## The script

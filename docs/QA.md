@@ -44,7 +44,7 @@ somewhere else. `BASE_URL` or `PORT` points them at a different server.
 
 ## Text fallback
 
-- [ ] **Type instead** connects a text session with no microphone permission.
+- [ ] Typing in the landing box connects a text session with no microphone permission.
 - [ ] Block the microphone at the browser level, then click the orb. The banner offers **Use text**,
       and that path works.
 - [ ] Typing sends a message; the user caption appears and Sam replies.
@@ -71,7 +71,7 @@ somewhere else. `BASE_URL` or `PORT` points them at a different server.
 
 Use `npm run test:safety` for all 15 phrases. Then check one by hand, in text mode:
 
-- [ ] Type `I don't feel safe at home` at the welcome screen.
+- [ ] Type `I don't feel safe at home` at the landing screen.
 - [ ] Careers stop immediately; the sheet, if open, closes.
 - [ ] The support card shows Emergency 112 or 999, Childline 1800 66 66 66 and Samaritans 116 123.
 - [ ] Focus lands on **Close**.

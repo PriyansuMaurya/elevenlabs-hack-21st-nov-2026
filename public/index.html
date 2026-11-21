@@ -18,7 +18,7 @@
     <link rel="stylesheet" href="/styles.css" />
   </head>
   <body>
-    <div class="app" id="app" data-stage="intro" data-voice="ready" data-captions="on">
+    <div class="app" id="app" data-stage="discover" data-voice="ready" data-captions="on">
       <header class="topbar">
         <a class="brand" href="/" aria-label="NEXT STEP home">
           <span class="brand-dot" aria-hidden="true"></span>
@@ -65,9 +65,14 @@
 
         <section class="surface" id="surface" aria-label="Sam's ideas">
           <div class="panel panel-discover" id="panel-discover">
-            <h2 class="headline-lg">Nothing here yet.</h2>
-            <p class="body">
-              Tell Sam what you're into and ideas will show up here. Speak, or type if you'd rather.
+            <h1 class="display">Find work you'd actually want.</h1>
+            <p class="lede">
+              Talk to Sam about what you're into. You'll get a few real jobs, then try one for three
+              minutes to see how it feels.
+            </p>
+            <p class="disclosure">
+              Sam is an AI voice. You can stop any time. Your conversation is sent to ElevenLabs. Talk, or type
+              below if you'd rather.
             </p>
             <form class="ask" id="ask-discover" novalidate>
               <label class="sr-only" for="ask-discover-input">Type to Sam</label>
@@ -94,7 +99,7 @@
             <div class="panel-actions">
               <button class="button-primary" id="profile-confirm" type="button">That's me</button>
             </div>
-            <p class="disclaimer">Tap the � on anything that's wrong. AI-generated summary.</p>
+            <p class="disclaimer">Tap a detail to remove it if it's wrong. AI-generated summary.</p>
           </div>
 
           <div class="panel panel-map" id="panel-map">
@@ -149,7 +154,7 @@
 
           <div class="panel panel-ended" id="panel-ended">
             <h2 class="headline-lg">Done for now.</h2>
-            <p class="body">Nothing is saved. Come back whenever you want.</p>
+            <p class="body">This page does not save your profile. Your conversation was sent to ElevenLabs.</p>
             <div class="panel-actions">
               <button class="button-secondary" id="talk-again" type="button">Talk to Sam</button>
             </div>
@@ -174,7 +179,7 @@
             </header>
             <div class="sheet-body" id="sheet-body"></div>
             <footer class="sheet-foot">
-              <button class="button-primary" id="try-day" type="button">Try a day as this</button>
+              <button class="button-primary" id="try-day" type="button">Try a 3-minute day in the life</button>
               <form class="ask" id="ask-sheet" novalidate>
                 <label class="sr-only" for="ask-sheet-input">Ask Sam about this</label>
                 <input

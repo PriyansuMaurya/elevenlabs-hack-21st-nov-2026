@@ -138,13 +138,13 @@ const check = (phrase, name, pass, detail = '') =>
   results.push(`${pass ? 'PASS' : 'FAIL'} ${phrase.slice(0, 34)} · ${name}${detail ? ` :: ${detail}` : ''}`);
 
 for (const [index, phrase] of DISCLOSURES.entries()) {
-  const position = index < 5 ? 'intro' : index < 10 ? 'detail' : 'simulate';
+  const position = index < 5 ? 'landing' : index < 10 ? 'detail' : 'simulate';
 
   await send('Page.navigate', { url: BASE });
   await waitFor(`typeof window.__nextStep === 'object'`, 15000);
 
   let selector = '#ask-discover';
-  if (position !== 'intro') {
+  if (position !== 'landing') {
     await evaluate(`window.__nextStep.showCards(${JSON.stringify(CARDS)})`);
     await evaluate(`document.querySelector('#card-field .career').click()`);
     await sleep(300);
@@ -187,14 +187,20 @@ for (const [index, phrase] of DISCLOSURES.entries()) {
   check(
     phrase,
     'lists Irish helplines as callable links',
-    ui.lines.length === 3 &&
-      ui.lines.some((l) => l.href === 'tel:112999') &&
+    ui.lines.length === 4 &&
+      ui.lines.some((l) => l.href === 'tel:112') &&
+      ui.lines.some((l) => l.href === 'tel:999') &&
+      !ui.lines.some((l) => l.href === 'tel:112999') &&
       ui.lines.some((l) => l.text.includes('1800 66 66 66')) &&
       ui.lines.some((l) => l.text.includes('116 123')),
     ui.lines.map((l) => l.href).join(' '),
   );
 
   if (index === 0) {
+    await evaluate(`window.__nextStep.showCards(${JSON.stringify(CARDS)})`);
+    await evaluate(`window.__nextStep.showProfile({summary:'A profile', interests:['art']})`);
+    check(phrase, 'late career events cannot leave support',
+      (await evaluate(`window.__nextStep.state().stage`)) === 'ended');
     await evaluate(`document.getElementById('support-dismiss').click()`);
     await sleep(200);
     check(
