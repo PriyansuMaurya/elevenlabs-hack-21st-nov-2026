@@ -1,0 +1,19 @@
+{
+  "name": "next-step",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Voice-first career discovery: talk about what you like, meet work you've never heard of, try one for three minutes.",
+  "type": "module",
+  "scripts": {
+    "start": "node server.mjs",
+    "dev": "node --watch server.mjs",
+    "setup-agent": "node scripts/setup-agent.mjs"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/PriyansuMaurya/elevenlabs-hack.git"
+  },
+  "dependencies": {
+    "@elevenlabs/client": "^1.37.1"
+  }
+}

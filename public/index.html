@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>NEXT STEP — talk your way to a job you'd actually want</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="brand">
+        <span class="brand-mark" aria-hidden="true"></span>
+        <span class="brand-name">NEXT STEP</span>
+      </div>
+      <div class="status" id="status" data-state="idle">
+        <span class="status-dot" aria-hidden="true"></span>
+        <span id="status-text">Ready when you are</span>
+      </div>
+    </header>
+
+    <main class="stage">
+      <section class="talk" aria-label="Conversation">
+        <ol class="steps" id="steps">
+          <li data-step="discover" class="step is-active"><span>1</span>Discover</li>
+          <li data-step="map" class="step"><span>2</span>Map</li>
+          <li data-step="simulate" class="step"><span>3</span>Simulate</li>
+        </ol>
+        <div class="transcript" id="transcript" aria-live="polite" aria-label="Live captions">
+          <p class="empty" id="transcript-empty">
+            You'll see what's being said here. Five minutes, one conversation, a few jobs you've
+            probably never heard of.
+          </p>
+        </div>
+      </section>
+
+      <aside class="panel" aria-label="Career cards">
+        <div class="panel-head">
+          <h2 id="panel-title">Careers worth a look</h2>
+          <span class="panel-sub" id="panel-sub">They'll show up as you talk</span>
+        </div>
+        <div class="cards" id="cards">
+          <div class="cards-empty">
+            <p>No cards yet.</p>
+            <p class="muted">
+              When there are, each one says why it came up, how people actually get in, and what a
+              Tuesday looks like.
+            </p>
+          </div>
+        </div>
+      </aside>
+    </main>
+
+    <footer class="controls">
+      <button class="mic" id="mic" type="button" aria-pressed="false">
+        <span class="mic-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 4a3 3 0 0 1 3 3v4a3 3 0 0 1-6 0V7a3 3 0 0 1 3-3Z" />
+            <path d="M5 11a7 7 0 0 0 14 0" />
+            <path d="M12 18v2" />
+          </svg>
+        </span>
+        <span class="mic-label" id="mic-label">Start talking</span>
+      </button>
+      <p class="hint" id="hint">Best with headphones. Nothing is saved.</p>
+    </footer>
+
+    <div class="helpline" id="helpline" hidden>
+      <div class="helpline-card" role="alertdialog" aria-labelledby="helpline-title">
+        <h2 id="helpline-title">If you need someone right now</h2>
+        <p>
+          You don't have to handle this alone, and you're not in trouble. Please talk to an adult you
+          trust, or ring one of these.
+        </p>
+        <ul>
+          <li><strong>Emergency</strong> &nbsp;112 or 999 if you or someone else is in danger</li>
+          <li><strong>Childline</strong> &nbsp;1800 66 66 66 (Ireland) · 0800 1111 (UK) — free, any time</li>
+          <li><strong>Samaritans</strong> &nbsp;116 123 — free, 24 hours</li>
+        </ul>
+        <p class="helpline-note">
+          If you're at home and it's not safe, try to get to a room with someone else, or somewhere
+          public.
+        </p>
+        <button type="button" class="helpline-dismiss" id="helpline-dismiss">I've read this</button>
+      </div>
+    </div>
+
+    <script src="/vendor/elevenlabs-client.js"></script>
+    <script src="/app.js"></script>
+  </body>
+</html>
