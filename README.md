@@ -24,8 +24,9 @@ npm start                      # http://localhost:5173
 
 For voice you need a microphone and `localhost` or HTTPS, because WebRTC requires a secure context.
 Headphones stop the agent hearing itself. If the microphone is blocked, the page offers the text
-path instead. The agent uses Sarah, a soft-spoken female voice, at a slightly slower pace; set
-`ELEVENLABS_VOICE_ID` in the env file to override it before running `npm run setup-agent`.
+path instead. The agent uses Sarah, a soft-spoken female voice, on Eleven v3 Conversational at a
+slightly slower pace; set `ELEVENLABS_VOICE_ID` in the env file to override the voice before
+running `npm run setup-agent`.
 
 ## The conversation
 

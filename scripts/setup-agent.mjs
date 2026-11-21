@@ -201,10 +201,10 @@ function buildBody(prompt, { minimal = false } = {}) {
       ],
     };
     // Voice settings for a natural, conversational agent.
-    // Sarah, at a gentle pace and with enough stability that the tone stays
-    // soft instead of swinging into a performance.
+    // Eleven v3 Conversational is the realtime v3 model for agents. Sarah, at
+    // a gentle pace and with enough stability that the tone stays soft.
     conversationConfig.tts = {
-      model_id: 'eleven_v4_turbo',
+      model_id: 'eleven_v3_conversational',
       voice_id: VOICE_ID || DEFAULT_VOICE_ID,
       stability: 0.45,
       speed: 0.95,
