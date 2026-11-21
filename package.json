@@ -7,7 +7,10 @@
   "scripts": {
     "start": "node server.mjs",
     "dev": "node --watch server.mjs",
-    "setup-agent": "node scripts/setup-agent.mjs"
+    "setup-agent": "node scripts/setup-agent.mjs",
+    "test": "node --test tests/lib.test.mjs",
+    "test:e2e": "node tests/e2e-personas.mjs",
+    "test:safety": "node tests/e2e-safety.mjs"
   },
   "repository": {
     "type": "git",

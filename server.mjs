@@ -60,7 +60,7 @@ async function fetchFromElevenLabs(path) {
 // One endpoint the page calls to get something it can connect with.
 // Prefers a WebRTC conversation token (lower latency), falls back to a websocket
 // signed URL, then to the bare agent id (fine for public agents and for a demo).
-async function handleSession(res) {
+async function handleSession(res, transport = 'voice') {
   if (!AGENT_ID) {
     return sendJson(res, 500, {
       error:
@@ -72,13 +72,17 @@ async function handleSession(res) {
     return sendJson(res, 200, { agentId: AGENT_ID, mode: 'agentId' });
   }
 
-  try {
-    const { token } = await fetchFromElevenLabs(
-      `conversation/token?agent_id=${encodeURIComponent(AGENT_ID)}`,
-    );
-    if (token) return sendJson(res, 200, { conversationToken: token, mode: 'webrtc' });
-  } catch (error) {
-    console.warn('[session] conversation token failed:', error.message);
+  // WebRTC tokens are voice-only. Text sessions need a websocket signed URL,
+  // so the page asks for transport=text and skips the token.
+  if (transport !== 'text') {
+    try {
+      const { token } = await fetchFromElevenLabs(
+        `conversation/token?agent_id=${encodeURIComponent(AGENT_ID)}`,
+      );
+      if (token) return sendJson(res, 200, { conversationToken: token, mode: 'webrtc' });
+    } catch (error) {
+      console.warn('[session] conversation token failed:', error.message);
+    }
   }
 
   try {
@@ -112,7 +116,9 @@ function serveFile(res, filePath) {
 const server = createServer(async (req, res) => {
   const url = new URL(req.url ?? '/', `http://${req.headers.host ?? 'localhost'}`);
 
-  if (url.pathname === '/api/session') return handleSession(res);
+  if (url.pathname === '/api/session') {
+    return handleSession(res, url.searchParams.get('transport') === 'text' ? 'text' : 'voice');
+  }
 
   if (url.pathname === '/api/health') {
     return sendJson(res, 200, { ok: true, hasAgentId: Boolean(AGENT_ID), hasApiKey: Boolean(API_KEY) });
@@ -120,7 +126,9 @@ const server = createServer(async (req, res) => {
 
   if (url.pathname === '/vendor/elevenlabs-client.js') return serveFile(res, CLIENT_BUNDLE);
 
-  const requested = url.pathname === '/' ? '/index.html' : url.pathname;
+  // One front door: public/index.html. A parallel prototype may live under
+  // /studio/, but it is not the app this README and tests describe.
+  const requested = url.pathname.endsWith('/') ? `${url.pathname}index.html` : url.pathname;
   const filePath = normalize(join(PUBLIC_DIR, requested));
   if (!filePath.startsWith(PUBLIC_DIR)) return sendJson(res, 403, { error: 'Forbidden' });
   return serveFile(res, filePath);

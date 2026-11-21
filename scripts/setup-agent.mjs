@@ -101,6 +101,40 @@ const tools = [
   },
   {
     type: 'client',
+    name: 'show_profile',
+    description:
+      "Shows the young person's profile on screen for them to check, at the end of Discover and before any career cards. Call it once, then ask them to confirm or correct it. Never call show_career_cards until they confirm.",
+    expects_response: false,
+    parameters: {
+      type: 'object',
+      properties: {
+        summary: {
+          type: 'string',
+          description:
+            'One sentence in their words: what they like, what they avoid, and what they want from work.',
+        },
+        interests: {
+          type: 'array',
+          items: { type: 'string', description: 'One concrete interest, in their words.' },
+          description: 'Two to four concrete interests or things they actually do.',
+        },
+        preferences: {
+          type: 'array',
+          items: { type: 'string', description: 'One preferred setting, in plain words.' },
+          description: 'Two or three settings: indoors or outdoors, hands-on or screen, solo or team.',
+        },
+        barriers: {
+          type: 'array',
+          items: { type: 'string', description: 'One thing that gets in the way, only if they said it.' },
+          description:
+            'Anything they said gets in the way: money, grades, travel, family, confidence, access needs. Leave empty rather than guess.',
+        },
+      },
+      required: ['summary', 'interests', 'preferences'],
+    },
+  },
+  {
+    type: 'client',
     name: 'show_helpline',
     description:
       'Shows a support card with helpline numbers on the user\'s screen. Call this ONLY when the user discloses self-harm, suicidal thoughts, abuse, or that they are unsafe, and call it immediately after you acknowledge them. Never call it for ordinary sadness or career frustration.',
@@ -123,9 +157,10 @@ function buildBody(prompt, { minimal = false } = {}) {
   const agent = {
     first_message: FIRST_MESSAGE,
     language: 'en',
-    // The greeting is the one turn nobody can answer yet. Without this, saying
-    // "hey" back cuts Sam off half a sentence in, every single session.
-    disable_first_message_interruptions: true,
+    // Deliberately interruptible. The ignore-terms list below already stops
+    // "hey" and "okay" cutting the greeting off, and a first-breath
+    // disclosure must never be swallowed just because it arrived early.
+    disable_first_message_interruptions: false,
     prompt: {
       prompt,
       tools,
@@ -135,7 +170,7 @@ function buildBody(prompt, { minimal = false } = {}) {
       // model's reasoning tokens count here too, and 80 was low enough that
       // half the test runs came back "all LLM attempts exhausted". This only
       // stops a runaway turn.
-      ...(minimal ? {} : { max_tokens: 250 }),
+      ...(minimal ? {} : { max_tokens: 700 }),
     },
   };
 
@@ -155,7 +190,16 @@ function buildBody(prompt, { minimal = false } = {}) {
         'ping',
       ],
     };
-    if (VOICE_ID) conversationConfig.tts = { voice_id: VOICE_ID };
+    // Chosen in scripts/eval-voice.mjs: slightly slower and more expressive than
+    // the neutral preset, steadier than the most animated one. Sam is a calm
+    // older sibling, not a presenter.
+    conversationConfig.tts = {
+      ...(VOICE_ID ? { voice_id: VOICE_ID } : {}),
+      stability: 0.38,
+      speed: 0.86,
+      similarity_boost: 0.8,
+      expressive_mode: true,
+    };
 
     // Turn taking. Without these the agent treats any short noise the mic picks
     // up ("yeah", "okay", a cough) as a finished turn and cuts its own audio
