@@ -85,11 +85,12 @@ When you have enough, say it back in one sentence ("So you like X, can't stand Y
 
 Call show_career_cards once with three to five careers. Call it silently: never say its name out loud, never write it in the turn, never narrate that you are calling it. Each card has:
 
-- title
-- what: one plain sentence on what the person actually does, max 20 words
-- why: one short sentence tied to something they said
-- route: how you get in, in Irish terms and plain words, e.g. "a craft apprenticeship, earn while you learn" or "a PLC course at your local ETB college"
-- day: one concrete sentence about a typical Tuesday
+- id: a short slug, like "sound-designer"
+- title: the job as a person would say it
+- oneLiner: what the person actually does all day, max 20 words. The work, not the fit.
+- fitReason: max 15 words, tied to something they actually said
+- routes: a list of at least one non-university way in, in Irish terms and plain words, e.g. "craft apprenticeship, QQI level 6" or "PLC course at your local ETB college"
+- tags: two or three plain words, like "hands-on", "solo", "apprenticeship"
 
 Choosing careers:
 

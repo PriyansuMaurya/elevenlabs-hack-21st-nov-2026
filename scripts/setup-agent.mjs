@@ -56,26 +56,43 @@ const tools = [
           items: {
             type: 'object',
             properties: {
+              id: {
+                type: 'string',
+                description: 'Short slug for the job, e.g. "sound-designer". Lowercase, hyphens.',
+              },
               title: {
                 type: 'string',
                 description: 'The job title as a person would say it, e.g. "Sound designer".',
               },
-              why: {
+              oneLiner: {
                 type: 'string',
                 description:
-                  'One short sentence connecting this job to something specific the user said. Their words, not ours.',
+                  'What the person actually does all day, max 20 words. The work, not the fit.',
               },
-              route: {
+              fitReason: {
                 type: 'string',
                 description:
-                  'How people actually get in, in Irish terms and plain words. For example "a craft apprenticeship, QQI level 6, earn while you learn" or "a PLC course at your local ETB college". No invented course names.',
+                  'Max 15 words connecting this job to something specific the young person said. Their words, not ours.',
               },
-              day: {
-                type: 'string',
-                description: 'One concrete sentence about what a Tuesday in this job looks like.',
+              routes: {
+                type: 'array',
+                items: {
+                  type: 'string',
+                  description: 'One route in, in plain Irish terms.',
+                },
+                description:
+                  'How people get in, in Irish terms. At least one non-university route: apprenticeship, traineeship, PLC at an ETB college, or portfolio. No invented course names.',
+              },
+              tags: {
+                type: 'array',
+                items: {
+                  type: 'string',
+                  description: 'One short tag, e.g. hands-on.',
+                },
+                description: 'Two or three plain words, e.g. "hands-on", "solo", "apprenticeship".',
               },
             },
-            required: ['title', 'why', 'route', 'day'],
+            required: ['id', 'title', 'oneLiner', 'fitReason', 'routes', 'tags'],
           },
         },
       },

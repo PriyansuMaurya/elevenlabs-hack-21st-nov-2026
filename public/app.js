@@ -128,28 +128,110 @@ function handleMessage(payload) {
 
 /* ---------------- career cards ---------------- */
 
-function normaliseCards(input) {
-  let cards = input;
-  if (typeof cards === 'string') {
+// The card tool is model output, so it is untrusted input: JSON sometimes, a
+// string sometimes, missing fields, repeats. Everything below either produces a
+// card that can be rendered or drops it and logs why. Nothing throws.
+const CARD_LIMITS = { cards: 5, oneLiner: 20, fitReason: 15 };
+
+function words(text) {
+  return String(text ?? '').trim().split(/\s+/).filter(Boolean);
+}
+
+function clip(text, max) {
+  const parts = words(text);
+  return parts.length > max ? `${parts.slice(0, max).join(' ')}…` : parts.join(' ');
+}
+
+function asList(value) {
+  if (Array.isArray(value)) return value.map((v) => String(v).trim()).filter(Boolean);
+  if (typeof value === 'string' && value.trim()) return [value.trim()];
+  return [];
+}
+
+function slugify(text, index) {
+  const slug = String(text)
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+  return slug || `card-${index}`;
+}
+
+// Returns { cards, rejected }. `cards` is always renderable; `rejected` is a
+// short list of reasons, logged for diagnosis rather than shown to the user.
+function validateCards(input) {
+  let raw = input;
+  if (typeof raw === 'string') {
     try {
-      cards = JSON.parse(cards);
+      raw = JSON.parse(raw);
     } catch {
-      return [];
+      raw = null;
     }
   }
-  if (!Array.isArray(cards)) return [];
-  return cards
-    .filter((c) => c && (c.title || c.name))
-    .map((c) => ({
-      title: String(c.title ?? c.name ?? 'Untitled'),
-      why: String(c.why ?? c.why_now ?? ''),
-      route: String(c.route ?? c.how_to_get_in ?? ''),
-      day: String(c.day ?? c.day_in_the_life ?? c.what_it_looks_like ?? ''),
-    }));
+  if (raw && !Array.isArray(raw) && Array.isArray(raw.cards)) raw = raw.cards;
+  if (!Array.isArray(raw)) {
+    logEvent('cards-rejected', { reason: 'not-a-list' });
+    return { cards: [], rejected: ['not-a-list'] };
+  }
+
+  const seen = new Set();
+  const cards = [];
+  const rejected = [];
+
+  for (const [index, candidate] of raw.entries()) {
+    if (!candidate || typeof candidate !== 'object' || Array.isArray(candidate)) {
+      rejected.push('not-a-card');
+      continue;
+    }
+    const title = String(candidate.title ?? candidate.name ?? '').trim();
+    if (!title) {
+      rejected.push('no-title');
+      continue;
+    }
+    const id = String(candidate.id ?? slugify(title, index)).trim();
+    if (seen.has(id)) {
+      rejected.push('duplicate');
+      continue;
+    }
+    const routes = asList(candidate.routes ?? candidate.route ?? candidate.how_to_get_in);
+    if (!routes.length) {
+      rejected.push('no-routes');
+      continue;
+    }
+    seen.add(id);
+    cards.push({
+      id,
+      title,
+      oneLiner: clip(candidate.oneLiner ?? candidate.one_liner ?? candidate.what ?? '', CARD_LIMITS.oneLiner),
+      fitReason: clip(candidate.fitReason ?? candidate.fit_reason ?? candidate.why ?? '', CARD_LIMITS.fitReason),
+      routes,
+      tags: asList(candidate.tags),
+    });
+    if (cards.length === CARD_LIMITS.cards) break;
+  }
+
+  if (!cards.length) logEvent('cards-rejected', { reason: rejected.join(',') || 'empty' });
+  return { cards, rejected };
+}
+
+let lastCardsSignature = '';
+
+function cardsSignature(cards) {
+  return cards.map((c) => `${c.id}:${c.title}:${c.oneLiner}`).join('|');
 }
 
 function renderCards(cards) {
-  if (!cards.length) return;
+  if (!cards.length) {
+    els.panelSub.textContent = 'Could not read those cards. Ask Sam for another set.';
+    return false;
+  }
+
+  // A reconnect can replay the same tool call. Same cards, no second render.
+  const signature = cardsSignature(cards);
+  if (signature === lastCardsSignature) {
+    logEvent('cards-ignored-repeat', { count: cards.length });
+    return false;
+  }
+  lastCardsSignature = signature;
 
   cardsShown = true;
   setStep('map');
@@ -166,10 +248,10 @@ function renderCards(cards) {
     title.textContent = card.title;
     el.append(title);
 
-    if (card.why) {
+    if (card.oneLiner) {
       const why = document.createElement('p');
       why.className = 'why';
-      why.textContent = card.why;
+      why.textContent = card.oneLiner;
       el.append(why);
     }
 
@@ -188,8 +270,9 @@ function renderCards(cards) {
       meta.append(rowEl);
     };
 
-    row('Route', card.route, 'route');
-    row('Tuesday', card.day);
+    row('Route', card.routes.join(' · '), 'route');
+    row('Fit', card.fitReason);
+    row('Tags', card.tags.join(' · '));
 
     if (meta.children.length) el.append(meta);
     els.cards.append(el);
@@ -288,11 +371,11 @@ async function start({ reconnect = false } = {}) {
 
       clientTools: {
         show_career_cards: (params) => {
-          const cards = normaliseCards(params?.cards ?? params);
+          const { cards, rejected } = validateCards(params?.cards ?? params);
           renderCards(cards);
           return cards.length
-            ? 'Cards are on screen now.'
-            : 'No cards rendered — show_career_cards expects a "cards" array of objects.';
+            ? `Cards are on screen: ${cards.map((c) => c.title).join(', ')}.`
+            : `No cards rendered (${rejected.join(', ') || 'empty'}). Each card needs a title and at least one route.`;
         },
         show_helpline: () => {
           showHelpline();
@@ -398,7 +481,7 @@ document.addEventListener('keydown', (event) => {
 // Rehearsal aid: render cards or the helpline without burning conversation minutes.
 // e.g. __nextStep.showCards([{title:"Sound designer", why:"you edit clips", route:"portfolio", day:"tuning a tunnel scene"}])
 window.__nextStep = {
-  showCards: (cards) => renderCards(normaliseCards(cards)),
+  showCards: (payload) => renderCards(validateCards(payload).cards),
   showHelpline,
   // Read-only mic level, for checking the input is live without muting anything.
   mic: () => (conversation ? Number(conversation.getInputVolume().toFixed(4)) : null),
