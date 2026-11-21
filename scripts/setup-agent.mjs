@@ -170,7 +170,9 @@ function buildBody(prompt, { minimal = false } = {}) {
       prompt,
       tools,
       ...(LLM ? { llm: LLM } : {}),
-      ...(minimal ? {} : { temperature: 0.65 }),
+      // Warm enough that phrasing varies between sessions. The prompt still
+      // fixes the goals, safety rules and length caps.
+      ...(minimal ? {} : { temperature: 0.8 }),
       // Backstop for the thirty-word rule. Not tight enough to enforce it: the
       // model's reasoning tokens count here too, and 80 was low enough that
       // half the test runs came back "all LLM attempts exhausted". This only
@@ -195,59 +197,22 @@ function buildBody(prompt, { minimal = false } = {}) {
         'ping',
       ],
     };
-    // Chosen in scripts/eval-voice.mjs: slightly slower and more expressive than
-    // the neutral preset, steadier than the most animated one. Sam is a calm
-    // older sibling, not a presenter.
+    // Voice settings for a natural, conversational agent.
     conversationConfig.tts = {
+      model_id: 'eleven_v4_turbo',
       ...(VOICE_ID ? { voice_id: VOICE_ID } : {}),
-      stability: 0.38,
-      speed: 0.86,
+      stability: 0.4,
+      speed: 1.0,
       similarity_boost: 0.8,
       expressive_mode: true,
     };
 
-    // Turn taking. Without these the agent treats any short noise the mic picks
-    // up ("yeah", "okay", a cough) as a finished turn and cuts its own audio
-    // mid-sentence, which reads as the agent interrupting itself.
-    //
-    // The ignore list is taken from real transcripts: these are the exact things
-    // users said that cut Sam off mid-sentence. Matching is case-insensitive and
-    // exact, so every form needs its own entry.
+    // Allow users to interrupt without ignoring their short responses.
     conversationConfig.turn = {
-      turn_eagerness: 'patient',
-      interruption_ignore_terms: [
-        'yeah',
-        'yep',
-        'okay',
-        'ok',
-        'mm',
-        'mm-hmm',
-        'mhm',
-        'hmm',
-        'hm',
-        'uh',
-        'um',
-        'oh',
-        'ah',
-        'right',
-        'alright',
-        'sure',
-        'cool',
-        'nice',
-        'hey',
-        'hi',
-        'hello',
-        'thanks',
-        'thank you',
-        'cheers',
-        'gotcha',
-        'i',
-        'nothing',
-        'can you hear me',
-        'are you there',
-      ],
+      turn_eagerness: 'normal',
+      interruption_ignore_terms: [],
       interruption_ignore_term_languages: ['en'],
-      merge_with_default_ignore_terms: true,
+      merge_with_default_ignore_terms: false,
     };
   }
 

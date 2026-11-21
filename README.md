@@ -31,7 +31,7 @@ path instead.
 | Stage | What happens |
 | --- | --- |
 | Landing | Says what this is, that Sam is AI, and that they can stop. Voice orb and a typing box are both on screen. |
-| Discover | Five or six adaptive questions, one at a time. Sam calls `show_profile` and reads the profile back. |
+| Discover | A short, adaptive conversation about six things, gathered in any order and one question at a time. Sam calls `show_profile` and reads the profile back. |
 | Profile | Concrete chips they can remove. Confirming it is what moves the conversation on. |
 | Map | Three to five cards from `show_career_cards`, each with a reason tied to something they said. |
 | Detail | What a day looks like, skills, school subjects, Irish routes in, related work, and an AI-generated label. |
