@@ -37,7 +37,7 @@ if (!API_KEY) {
 // Says what it is in the first breath, as the brief requires, and states the
 // exit. Kept to one clause so it lands as an introduction, not a disclaimer.
 const FIRST_MESSAGE =
-  "Hi, I'm Sam. I'm an AI, not a person — I'll only say that once. We're going to work out what kind of work actually suits you, then you'll try one out for a few minutes. No quizzes, no labels, and you can stop whenever you want. Start me off: what do you do when there's nothing you're supposed to be doing?";
+  "Hi, I'm Sam. I'm an AI, not a person — I'll say that once. Stop any time. What do you do when there's nothing you're supposed to be doing?";
 
 const tools = [
   {
@@ -95,9 +95,10 @@ const tools = [
 async function loadPrompt() {
   const base = await readFile(join(ROOT, 'agent/system-prompt.md'), 'utf8');
   const scenarios = await readFile(join(ROOT, 'agent/scenarios.md'), 'utf8');
-  if (!base.includes('{{SCENARIOS}}')) {
-    throw new Error('agent/system-prompt.md is missing the {{SCENARIOS}} placeholder.');
-  }
+  // Earlier versions of the prompt pulled the scenarios in through a
+  // placeholder. The current prompt builds its own, so the placeholder is
+  // optional: no placeholder, no injection.
+  if (!base.includes('{{SCENARIOS}}')) return base;
   return base.replace('{{SCENARIOS}}', scenarios.trim());
 }
 
@@ -113,6 +114,11 @@ function buildBody(prompt, { minimal = false } = {}) {
       tools,
       ...(LLM ? { llm: LLM } : {}),
       ...(minimal ? {} : { temperature: 0.65 }),
+      // Backstop for the thirty-word rule. Not tight enough to enforce it: the
+      // model's reasoning tokens count here too, and 80 was low enough that
+      // half the test runs came back "all LLM attempts exhausted". This only
+      // stops a runaway turn.
+      ...(minimal ? {} : { max_tokens: 250 }),
     },
   };
 
