@@ -1,0 +1,200 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#F6F5FB" />
+    <meta
+      name="description"
+      content="NEXT STEP is a voice conversation that helps 15 to 18 year olds in Ireland find work they'd actually want."
+    />
+    <title>NEXT STEP — find work you'd actually want</title>
+    <link
+      rel="icon"
+      href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%23F6F5FB'/><rect x='9' y='9' width='14' height='14' rx='4' fill='%23FF7A45'/></svg>"
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=Figtree:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/studio/styles.css" />
+  </head>
+  <body>
+    <div class="app" id="app" data-stage="intro" data-voice="ready" data-captions="on">
+      <header class="topbar">
+        <a class="brand" href="/studio/" aria-label="NEXT STEP home">
+          <span class="brand-dot" aria-hidden="true"></span>
+          <span class="brand-name">Next Step</span>
+        </a>
+        <div class="topbar-actions">
+          <button class="text-button" id="support-link" type="button" hidden>Support</button>
+        </div>
+      </header>
+
+      <div class="banner" id="banner" role="alert" hidden>
+        <p id="banner-text"></p>
+        <button class="banner-action" id="banner-action" type="button" hidden>Try again</button>
+      </div>
+
+      <main class="stage">
+        <section class="voice-stage" aria-label="Sam">
+          <div class="voice-cluster">
+            <button class="voice-trigger" id="voice" type="button" aria-pressed="false">
+              <span class="orb" id="orb"></span>
+            </button>
+          </div>
+
+          <div class="captions" id="captions" aria-live="polite">
+            <p class="bar-state" id="bar-state" aria-hidden="true">Listening</p>
+            <p class="caption caption-sam" id="caption-sam"></p>
+            <p class="caption caption-user" id="caption-user" hidden></p>
+          </div>
+        </section>
+
+        <section class="surface" id="surface" aria-label="Sam's ideas">
+          <div class="panel panel-discover" id="panel-discover">
+            <h2 class="headline-lg">Nothing here yet.</h2>
+            <p class="body">
+              Tell Sam what you're into and ideas will show up here. Speak, or type if you'd rather.
+            </p>
+            <form class="ask" id="ask-discover" novalidate>
+              <label class="sr-only" for="ask-discover-input">Type to Sam</label>
+              <input
+                id="ask-discover-input"
+                type="text"
+                placeholder="Type instead of talking"
+                autocomplete="off"
+                enterkeyhint="send"
+              />
+              <button class="ask-send" type="submit">Send</button>
+            </form>
+          </div>
+
+          <div class="panel panel-map" id="panel-map">
+            <div class="panel-head">
+              <h2 class="headline-lg">Careers worth a look</h2>
+              <p class="panel-note" id="cards-note">Tap one, or ask about it out loud.</p>
+            </div>
+            <div class="card-field" id="card-field"></div>
+            <p class="empty-cards" id="cards-empty" hidden>
+              Sam couldn't lay those out. Ask for another set.
+            </p>
+          </div>
+
+          <div class="panel panel-simulate" id="panel-simulate">
+            <article class="scene" id="scene" aria-live="polite">
+              <p class="scene-mark" id="scene-mark">Decision 1 of 3</p>
+              <p class="scene-text" id="scene-text">Sam is setting the scene.</p>
+            </article>
+            <form class="ask ask-move" id="ask-move" novalidate>
+              <label class="sr-only" for="ask-move-input">Your answer</label>
+              <input
+                id="ask-move-input"
+                type="text"
+                placeholder="Say it out loud, or type your call"
+                autocomplete="off"
+                enterkeyhint="send"
+              />
+              <button class="ask-send" type="submit">Send</button>
+            </form>
+          </div>
+
+          <div class="panel panel-debrief" id="panel-debrief">
+            <h2 class="headline-lg" id="debrief-title">That was a day at work.</h2>
+            <blockquote class="debrief-quote" id="debrief-quote"></blockquote>
+            <div class="feel">
+              <p class="feel-label">How did that feel?</p>
+              <div class="chips" id="feel-chips">
+                <button class="chip-feel" type="button" data-feel="Loved it">Loved it</button>
+                <button class="chip-feel" type="button" data-feel="Not for me">Not for me</button>
+                <button class="chip-feel" type="button" data-feel="Not sure">Not sure</button>
+              </div>
+            </div>
+            <div class="panel-actions">
+              <button class="button-primary" id="try-another" type="button">
+                Try another career
+              </button>
+              <button class="button-secondary" id="stop-now" type="button">Stop for now</button>
+            </div>
+          </div>
+
+          <div class="panel panel-ended" id="panel-ended">
+            <h2 class="headline-lg">Done for now.</h2>
+            <p class="body">Nothing is saved. Come back whenever you want.</p>
+            <div class="panel-actions">
+              <button class="button-secondary" id="talk-again" type="button">Talk to Sam</button>
+            </div>
+          </div>
+
+          <aside
+            class="sheet"
+            id="sheet"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="sheet-title"
+            hidden
+          >
+            <header class="sheet-head" id="sheet-head">
+              <button class="sheet-close" id="sheet-close" type="button" aria-label="Close">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true">
+                  <path d="M6 6l12 12M18 6L6 18" />
+                </svg>
+              </button>
+              <h2 class="sheet-title" id="sheet-title"></h2>
+              <div class="chips" id="sheet-tags"></div>
+            </header>
+            <div class="sheet-body" id="sheet-body"></div>
+            <footer class="sheet-foot">
+              <button class="button-primary" id="try-day" type="button">Try a day as this</button>
+              <form class="ask" id="ask-sheet" novalidate>
+                <label class="sr-only" for="ask-sheet-input">Ask Sam about this</label>
+                <input
+                  id="ask-sheet-input"
+                  type="text"
+                  placeholder="Ask Sam about this"
+                  autocomplete="off"
+                  enterkeyhint="send"
+                />
+                <button class="ask-send" type="submit">Send</button>
+              </form>
+              <p class="disclaimer">
+                Written by AI. Check careersportal.ie before you decide anything.
+              </p>
+            </footer>
+          </aside>
+        </section>
+      </main>
+
+      <p class="sr-only" id="sr-status" aria-live="polite"></p>
+    </div>
+
+    <div class="scrim" id="sheet-scrim" hidden></div>
+
+    <div class="support" id="support" hidden>
+      <div
+        class="support-card"
+        id="support-card"
+        role="alertdialog"
+        aria-modal="true"
+        aria-labelledby="support-title"
+      >
+        <h2 class="support-title" id="support-title">You're not on your own.</h2>
+        <p class="support-copy">
+          You're not in trouble and you're not alone. Talking to an adult you trust is a good next
+          step — a parent, a teacher, a coach, or a school counsellor.
+        </p>
+        <div class="support-lines" id="support-lines"></div>
+        <p class="support-emergency">
+          If you are in danger now, call <a href="tel:112">112</a> or <a href="tel:999">999</a>.
+        </p>
+        <button class="support-close" id="support-dismiss" type="button">Close</button>
+      </div>
+    </div>
+
+    <script src="/vendor/elevenlabs-client.js"></script>
+    <script src="/studio/fluid-orb.js"></script>
+    <script src="/studio/app.js"></script>
+  </body>
+</html>

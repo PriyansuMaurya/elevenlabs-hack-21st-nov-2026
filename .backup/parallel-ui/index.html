@@ -1,0 +1,290 @@
+<!doctype html>
+<html lang="en-IE">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#0c0d0a" />
+    <meta
+      name="description"
+      content="NEXT STEP is a voice conversation that helps 15 to 18 year olds find work they'd actually want, including work they've never heard of."
+    />
+    <title>NEXT STEP — find work you'd actually want</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <a class="skip" href="#main">Skip to content</a>
+
+    <header class="topbar">
+      <div class="brand">
+        <span class="brand-mark" aria-hidden="true"></span>
+        <span class="brand-name">NEXT STEP</span>
+      </div>
+      <div class="status" id="status" data-state="idle" role="status" aria-live="polite">
+        <span class="status-dot" aria-hidden="true"></span>
+        <span id="status-text">Ready when you are</span>
+      </div>
+    </header>
+
+    <ol class="steps" id="steps" aria-label="Where you are">
+      <li data-step="discover" class="step is-active"><span>1</span>Discover</li>
+      <li data-step="profile" class="step"><span>2</span>Check</li>
+      <li data-step="map" class="step"><span>3</span>Careers</li>
+      <li data-step="simulate" class="step"><span>4</span>Try one</li>
+    </ol>
+
+    <main id="main" class="main">
+      <!-- Welcome -->
+      <section class="screen screen-welcome" id="screen-welcome" aria-labelledby="welcome-title">
+        <p class="eyebrow">For 15 to 18 year olds in Ireland</p>
+        <h1 id="welcome-title">You don't need a plan.<br />You need a first step.</h1>
+        <p class="lede">
+          Talk for two minutes about what you actually like. Meet a few jobs you've probably never
+          heard of, then try one for three minutes.
+        </p>
+        <div class="welcome-actions">
+          <button class="btn btn-primary btn-start" id="start-voice" type="button">
+            <span class="btn-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 4a3 3 0 0 1 3 3v4a3 3 0 0 1-6 0V7a3 3 0 0 1 3-3Z" />
+                <path d="M5 11a7 7 0 0 0 14 0" />
+                <path d="M12 18v2" />
+              </svg>
+            </span>
+            Start talking
+          </button>
+          <button class="btn btn-ghost" id="start-text" type="button">Type instead</button>
+        </div>
+        <p class="disclosure">
+          <strong>Sam is an AI, not a person.</strong> You can stop any time. Nothing is saved, and
+          you don't need to give your name.
+        </p>
+        <ul class="welcome-points">
+          <li><span aria-hidden="true">01</span> Five or six real questions, not a quiz.</li>
+          <li><span aria-hidden="true">02</span> Three to five jobs, at least three without a degree.</li>
+          <li><span aria-hidden="true">03</span> One three-minute slice of the actual work.</li>
+        </ul>
+      </section>
+
+      <!-- Discover -->
+      <section class="screen screen-discover" id="screen-discover" aria-labelledby="discover-title" hidden>
+        <div class="screen-head">
+          <div>
+            <p class="eyebrow">Part one · about two minutes</p>
+            <h2 id="discover-title" tabindex="-1">Tell Sam what you're into</h2>
+          </div>
+          <span class="time-chip">Voice on</span>
+        </div>
+
+        <div class="orb-wrap">
+          <div class="orb" id="orb" data-state="idle" aria-hidden="true">
+            <span class="orb-ring"></span>
+            <span class="orb-core"></span>
+          </div>
+          <p class="orb-label" id="orb-label">Tap the mic and say anything</p>
+        </div>
+
+        <div class="transcript" id="transcript" aria-live="polite" aria-label="Live captions">
+          <p class="empty" id="transcript-empty">
+            What you both say shows up here. You can interrupt Sam at any point.
+          </p>
+        </div>
+      </section>
+
+      <!-- Profile confirmation -->
+      <section class="screen screen-profile" id="screen-profile" aria-labelledby="profile-title" hidden>
+        <p class="eyebrow">Part two · ten seconds</p>
+        <h2 id="profile-title" tabindex="-1">Does this sound right?</h2>
+        <p class="profile-summary" id="profile-summary"></p>
+        <div class="profile-groups" id="profile-groups"></div>
+        <p class="profile-hint" id="profile-hint">
+          Wrong? Tap a chip to remove it, or tell Sam in your own words.
+        </p>
+        <div class="profile-actions">
+          <button class="btn btn-primary" id="profile-confirm" type="button">That's me</button>
+          <button class="btn btn-ghost" id="profile-correct" type="button">Something's off</button>
+        </div>
+      </section>
+
+      <!-- Career map -->
+      <section class="screen screen-map" id="screen-map" aria-labelledby="map-title" hidden>
+        <div class="screen-head">
+          <div>
+            <p class="eyebrow">Part three · pick one</p>
+            <h2 id="map-title" tabindex="-1">Careers worth a look</h2>
+            <p class="screen-sub" id="map-sub">Tap a card, or ask about one out loud.</p>
+          </div>
+        </div>
+        <div class="cards" id="cards"></div>
+        <p class="map-note">AI-generated suggestions. Check the details with a careers advisor.</p>
+      </section>
+
+      <!-- Career detail -->
+      <section class="screen screen-detail" id="screen-detail" aria-labelledby="detail-title" hidden>
+        <button class="back" id="detail-back" type="button">← Back to careers</button>
+        <div class="detail-head">
+          <p class="eyebrow" id="detail-eyebrow">Career detail</p>
+          <h2 id="detail-title" tabindex="-1"></h2>
+          <p class="detail-oneliner" id="detail-oneliner"></p>
+          <p class="detail-fit" id="detail-fit"></p>
+        </div>
+
+        <div class="detail-grid">
+          <section class="detail-block">
+            <h3>What a normal day looks like</h3>
+            <ul id="detail-daily"></ul>
+          </section>
+          <section class="detail-block">
+            <h3>Skills you'd use</h3>
+            <ul id="detail-skills"></ul>
+          </section>
+          <section class="detail-block">
+            <h3>School subjects that help</h3>
+            <p id="detail-subjects"></p>
+          </section>
+          <section class="detail-block">
+            <h3>Ways in, in Ireland</h3>
+            <ul class="routes" id="detail-routes"></ul>
+          </section>
+          <section class="detail-block">
+            <h3>Related work</h3>
+            <p id="detail-related"></p>
+          </section>
+        </div>
+
+        <p class="detail-note" id="detail-note">AI-generated information. Check with a careers advisor.</p>
+        <div class="detail-actions">
+          <button class="btn btn-primary" id="detail-try" type="button">
+            Try a 3-minute day in the life
+          </button>
+          <button class="btn btn-ghost" id="detail-ask" type="button">Ask about this job</button>
+        </div>
+      </section>
+
+      <!-- Simulation -->
+      <section class="screen screen-sim" id="screen-simulation" aria-labelledby="sim-title" hidden>
+        <div class="sim-top">
+          <p class="eyebrow" id="sim-where">Simulation</p>
+          <button class="text-btn" id="sim-exit" type="button">Leave</button>
+        </div>
+        <h2 id="sim-title" tabindex="-1"></h2>
+        <p class="sim-role" id="sim-role"></p>
+
+        <div class="sim-board">
+          <p class="sim-situation" id="sim-situation"></p>
+          <ul class="sim-progress" id="sim-progress" aria-label="Decisions made"></ul>
+          <div class="sim-decision" id="sim-decision">
+            <h3 id="sim-question"></h3>
+            <div class="sim-options" id="sim-options"></div>
+            <p class="sim-say">Or just say what you'd do. Sam will react.</p>
+          </div>
+          <div class="sim-outcome" id="sim-outcome" hidden>
+            <p class="sim-outcome-label">What happens</p>
+            <p id="sim-outcome-text"></p>
+            <button class="btn btn-primary" id="sim-next" type="button">Next</button>
+          </div>
+        </div>
+
+        <div class="sim-footer">
+          <button class="text-btn" id="sim-restart" type="button">Restart this scene</button>
+          <span class="sim-timer" id="sim-timer">About 3 minutes</span>
+        </div>
+      </section>
+
+      <!-- Reflection -->
+      <section class="screen screen-reflect" id="screen-reflection" aria-labelledby="reflect-title" hidden>
+        <p class="eyebrow">Part four · what just happened</p>
+        <h2 id="reflect-title" tabindex="-1">That's a wrap.</h2>
+        <p class="reflect-what" id="reflect-what"></p>
+
+        <section class="reflect-block">
+          <h3>What you tried</h3>
+          <ol class="reflect-choices" id="reflect-choices"></ol>
+        </section>
+        <section class="reflect-block">
+          <h3>The honest hard part</h3>
+          <p id="reflect-hard"></p>
+        </section>
+        <section class="reflect-block">
+          <h3>One thing you could do this week</h3>
+          <p id="reflect-next"></p>
+        </section>
+
+        <div class="reflect-actions">
+          <button class="btn btn-primary" id="reflect-again" type="button">Try that scene again</button>
+          <button class="btn btn-ghost" id="reflect-more" type="button">Look at other careers</button>
+        </div>
+        <p class="detail-note">AI-generated information. Check with a careers advisor.</p>
+      </section>
+
+      <!-- Stopped after a safety disclosure -->
+      <section class="screen screen-support" id="screen-support" aria-labelledby="support-title" hidden>
+        <p class="eyebrow">We've stopped the careers chat</p>
+        <h2 id="support-title" tabindex="-1">You're not in trouble, and you're not on your own.</h2>
+        <p>
+          The careers part is over for now. If you want to talk to someone, these are free and
+          confidential. You can also tell an adult you trust: a parent, a teacher, a coach.
+        </p>
+        <ul class="helpline-list" id="support-list"></ul>
+        <p class="detail-note">If you are in immediate danger, call 112 or 999 now.</p>
+        <button class="btn btn-ghost" id="support-close" type="button">Close</button>
+      </section>
+    </main>
+
+    <!-- Dock: mic, status, text fallback -->
+    <div class="dock" id="dock" hidden>
+      <div class="dock-inner">
+        <button class="mic" id="mic" type="button" aria-pressed="false" aria-label="Start the conversation">
+          <span class="mic-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 4a3 3 0 0 1 3 3v4a3 3 0 0 1-6 0V7a3 3 0 0 1 3-3Z" />
+              <path d="M5 11a7 7 0 0 0 14 0" />
+              <path d="M12 18v2" />
+            </svg>
+          </span>
+          <span class="mic-label" id="mic-label">Start</span>
+        </button>
+
+        <form class="type-form" id="type-form" autocomplete="off">
+          <label class="sr-only" for="type-input">Type a message to Sam</label>
+          <input
+            id="type-input"
+            name="message"
+            type="text"
+            placeholder="Type instead…"
+            maxlength="400"
+            enterkeyhint="send"
+          />
+          <button class="send" id="send" type="submit" aria-label="Send message">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M4 12h15" />
+              <path d="m13 6 6 6-6 6" />
+            </svg>
+          </button>
+        </form>
+      </div>
+      <p class="live-caption" id="live-caption" aria-live="polite" hidden></p>
+      <p class="hint" id="hint">Best with headphones. Nothing is saved.</p>
+    </div>
+
+    <p class="sr-only" id="announcer" aria-live="assertive"></p>
+
+    <!-- Support overlay, shown by Sam's tool or by the app's own detector -->
+    <div class="overlay" id="helpline" hidden>
+      <div class="overlay-card" role="alertdialog" aria-modal="true" aria-labelledby="helpline-title" aria-describedby="helpline-body">
+        <h2 id="helpline-title">If you need someone right now</h2>
+        <p id="helpline-body">
+          You don't have to handle this alone. Please talk to an adult you trust, or ring one of
+          these.
+        </p>
+        <ul class="helpline-list" id="helpline-list"></ul>
+        <p class="overlay-note">
+          If you're at home and it isn't safe, try to get to a room with someone else, or somewhere
+          public.
+        </p>
+        <button class="btn btn-ghost" id="helpline-dismiss" type="button">I've read this</button>
+      </div>
+    </div>
+
+    <script type="module" src="/app.js"></script>
+  </body>
+</html>

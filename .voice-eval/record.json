@@ -1,0 +1,57 @@
+{
+  "evaluatedAt": "2026-11-21T14:52:30.797Z",
+  "voiceId": "cjVigY5qzO86Huf0OWal",
+  "sample": "So you're the one who fixes things. Is it the taking apart, or getting it working again? Fair enough. Three that might be new to you: sound designer, assistive tech, fabrication.",
+  "configs": [
+    {
+      "id": "neutral",
+      "label": "Neutral / steady",
+      "settings": {
+        "stability": 0.5,
+        "similarity_boost": 0.75,
+        "speed": 0.95,
+        "style": 0,
+        "use_speaker_boost": true
+      },
+      "note": "The provider default. Clear, but flat for a one-to-one conversation.",
+      "file": ".voice-eval\\neutral.mp3",
+      "seconds": 10.66,
+      "wordsPerMinute": 174
+    },
+    {
+      "id": "warm",
+      "label": "Warm / slightly slower",
+      "settings": {
+        "stability": 0.38,
+        "similarity_boost": 0.8,
+        "speed": 0.86,
+        "style": 0.35,
+        "use_speaker_boost": true
+      },
+      "note": "More variation within a sentence and a little more thinking time. Closest to an older sibling.",
+      "file": ".voice-eval\\warm.mp3",
+      "seconds": 12.46,
+      "wordsPerMinute": 149
+    },
+    {
+      "id": "brisk",
+      "label": "Brisk / more animated",
+      "settings": {
+        "stability": 0.62,
+        "similarity_boost": 0.75,
+        "speed": 1,
+        "style": 0.55,
+        "use_speaker_boost": true
+      },
+      "note": "Faster and more pushed. Reads as a presenter or an advert, not a conversation.",
+      "file": ".voice-eval\\brisk.mp3",
+      "seconds": 9.22,
+      "wordsPerMinute": 202
+    }
+  ],
+  "selected": "warm",
+  "reasoning": "Warm/slightly slower keeps sentence-level variation without turning into a performance. A slower pace gives a 15 to 18 year old room to answer, and the scripted 30-word ceiling keeps turns short regardless. Teen naturalness ratings are a human test and are not claimed here.",
+  "unverified": [
+    "Average naturalness rating from five teenage testers"
+  ]
+}
